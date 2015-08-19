@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>Assignment 1. Tessellation and Twist</title>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPos;
+varying float dist;
+uniform float phi;
+
+void main()
+{
+    float d = length(vPos.xy);
+    float angle = radians(phi) * d;
+    vec2  cosi = vec2(cos(angle), -sin(angle));
+
+    float x = dot(vPos.xy, cosi);
+    float y = dot(vPos.xy, vec2(-cosi.y, cosi.x));
+
+    dist = 1.0 - 0.5 * d;
+    gl_Position = vec4(x,y,vPos.zw);
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+
+varying float dist;
+uniform vec3 color;
+
+void main()
+{
+    gl_FragColor = vec4( color * dist, 1.0 );
+}
+</script>
+
+<script type="text/javascript" src="/common/webgl-utils.js"></script>
+<script type="text/javascript" src="/common/initShaders.js"></script>
+<script type="text/javascript" src="/common/MV.js"></script>
+<script type="text/javascript" src="/assign1/tesselationTwist.js"></script>
+</head>   
+
+<body>
+<div style="width:800px">
+  <div style="float:right;z-index:1">
+    <a href="/news/assignment_1/2015-07-17-3">&lt;&lt; Back</a>
+  </div>
+  <div style="background-color:rgba(55,56,51,0.5); width:100%">
+      <h1>Assignment 1. Tessellation and Twist</h1>
+  </div>
+  <div style="background-color:#e9dcc9; height:520px;width:520px;float:left;">
+    <center>
+      <canvas id="gl-canvas" width="512" height="512">
+        Oops ... your browser doesn't support the HTML5 canvas element
+      </canvas>
+    </center>
+  </div>
+  <div style="background-color:#5e3e28; height:520px;width:280px;float:right;">
+    <div style="padding: 5px">
+      <table border="0">
+      <tr>
+      <td>color:</td>
+      <td>&nbsp;<input id="color" type="color" value="#ff0000"/></td>
+      </tr>
+      <tr>
+      <td>level:</td>
+      <td>0<input id="level" type="range" min="0" max="5" step="1" value="0"/>5</td>
+      </tr>
+      <tr>
+      <td>phi:</td>
+      <td>0<input id="phi" type="range" min="0" max="360" step="5" value="0"/>360&deg;</td>
+      </tr>
+      </table>
+    </div>
+  </div>
+  <div style="background-color:#373833;clear:both">
+    <center>
+      Copyright © 2015 Roman Kulagin (Qlogin)
+    </center>
+  </div>
+</div>
+</body>
+</html>
