@@ -7,12 +7,11 @@
 <script id="vertex-shader" type="x-shader/x-vertex">
 attribute vec4 vPos;
 
-uniform mat4 mvMatrix;
-uniform mat4 projMatrix;
+uniform mat4 mvpMatrix;
 
 void main()
 {
-    gl_Position = projMatrix * mvMatrix * vPos;
+    gl_Position = mvpMatrix * vPos;
 }
 </script>
 

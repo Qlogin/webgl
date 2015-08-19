@@ -5,8 +5,7 @@ var gl;
 
 var vPosLoc;
 var colorLoc;
-var mvMatrixLoc;
-var projMatrixLoc;
+var mvpMatrixLoc;
 
 var objects = [];
 var sel_id = -1;
@@ -17,6 +16,7 @@ var lastPosY = 0;
 var camera = {
     viewMatrix : mat4(),
     projMatrix : mat4(),
+    vpMatrix   : mat4(),
     course     : 0.0,
     pitch      : 0.0,
     distance   : 5.0,
@@ -33,11 +33,13 @@ var camera = {
                        r * Math.cos(p) * Math.sin(c),
                        r * Math.sin(p));
         this.viewMatrix = lookAt(eye, vec3(0,0,0), vec3(0,0,1));
+        this.vpMatrix = mult(this.projMatrix, this.viewMatrix);
     },
 
     updateProjection : function() {
         this.projMatrix = perspective(this.fov, canvas.width/canvas.height,
                                       this.near, this.far);
+        this.vpMatrix = mult(this.projMatrix, this.viewMatrix);
     }
 };
 
@@ -69,8 +71,7 @@ window.onload = function init()
 
     vPosLoc = gl.getAttribLocation( program, "vPos" );
     colorLoc      = gl.getUniformLocation(program, "color");
-    mvMatrixLoc   = gl.getUniformLocation(program, "mvMatrix");
-    projMatrixLoc = gl.getUniformLocation(program, "projMatrix");
+    mvpMatrixLoc   = gl.getUniformLocation(program, "mvpMatrix");
 
     // Setup camera
     camera.fov  = $('#fov')[0].valueAsNumber;
@@ -401,13 +402,12 @@ function createCone(r, h, hnum)
 function render()
 {
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-    gl.uniformMatrix4fv( projMatrixLoc, false, flatten(camera.projMatrix) );
 
     var i;
     for (i in objects)
     {
-        var mvMatrix = mult(camera.viewMatrix, objects[i].transform);
-        gl.uniformMatrix4fv( mvMatrixLoc, false, flatten(mvMatrix) );
+        var mvpMatrix = mult(camera.vpMatrix, objects[i].transform);
+        gl.uniformMatrix4fv(mvpMatrixLoc, false, flatten(mvpMatrix));
 
         // Associate out shader variables with our data buffer
         gl.bindBuffer( gl.ARRAY_BUFFER, objects[i].vBuffer );
