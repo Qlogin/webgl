@@ -3,9 +3,6 @@
 var canvas;
 var gl;
 
-var mvMatrix = mat4();
-var projMatrix = mat4();
-
 var vPosLoc;
 var colorLoc;
 var mvMatrixLoc;
@@ -14,50 +11,35 @@ var projMatrixLoc;
 var objects = [];
 var sel_id = -1;
 
-function hexToR(h) {return parseInt((cutHex(h)).substring(0,2),16)}
-function hexToG(h) {return parseInt((cutHex(h)).substring(2,4),16)}
-function hexToB(h) {return parseInt((cutHex(h)).substring(4,6),16)}
-function cutHex(h) {return (h.charAt(0)=="#") ? h.substring(1,7):h}
+var lastPosX = 0;
+var lastPosY = 0;
 
-function getColorValue(strcol)
-{
-    var color = [1.0, 1.0, 1.0];
-    color[0] = hexToR(strcol) / 255;
-    color[1] = hexToG(strcol) / 255;
-    color[2] = hexToB(strcol) / 255;
-    return color;
-}
+var camera = {
+    viewMatrix : mat4(),
+    projMatrix : mat4(),
+    course     : 0.0,
+    pitch      : 0.0,
+    distance   : 5.0,
+    fov        : 90,
+    near       : 0.1,
+    far        : 10,
 
-function rgbToHex(R,G,B) { return '#'+toHex(R)+toHex(G)+toHex(B)}
-function toHex(n)
-{
-   n = (255 * n).toFixed();
-   n = Math.max(0,Math.min(n,255));
-   return "0123456789ABCDEF".charAt((n-n%16)/16)
-        + "0123456789ABCDEF".charAt(n%16);
-}
+    updateView : function() {
+        var r = this.distance;
+        var c = radians(this.course);
+        var p = radians(this.pitch);
 
-function calcProjection()
-{
-    var fov = $('#fov')[0].valueAsNumber;
-    var near = $('#near-clip')[0].valueAsNumber;
-    var far  = $('#far-clip')[0].valueAsNumber;
-    projMatrix = perspective(fov, 4/3, near, far);
-    render();
-}
+        var eye = vec3(r * Math.cos(p) * Math.cos(c),
+                       r * Math.cos(p) * Math.sin(c),
+                       r * Math.sin(p));
+        this.viewMatrix = lookAt(eye, vec3(0,0,0), vec3(0,0,1));
+    },
 
-function calcModelView()
-{
-    var r = $('#distance')[0].valueAsNumber;
-    var c = radians($('#course')[0].valueAsNumber);
-    var p = radians($('#pitch' )[0].valueAsNumber);
-
-    var eye = vec3(r * Math.cos(p) * Math.cos(c),
-                   r * Math.cos(p) * Math.sin(c),
-                   r * Math.sin(p));
-    mvMatrix = lookAt(eye, vec3(0,0,0), vec3(0,0,1));
-    render();
-}
+    updateProjection : function() {
+        this.projMatrix = perspective(this.fov, canvas.width/canvas.height,
+                                      this.near, this.far);
+    }
+};
 
 window.onload = function init()
 {
@@ -79,25 +61,85 @@ window.onload = function init()
     gl.clearColor( 0.91, 0.86, 0.79, 1.0 );
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.POLYGON_OFFSET_FILL);
-    gl.polygonOffset(1.0, 2.0);
+    gl.polygonOffset(1.0, 0.0);
 
     //  Load shaders and initialize attribute buffers
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
     vPosLoc = gl.getAttribLocation( program, "vPos" );
-
     colorLoc      = gl.getUniformLocation(program, "color");
     mvMatrixLoc   = gl.getUniformLocation(program, "mvMatrix");
     projMatrixLoc = gl.getUniformLocation(program, "projMatrix");
 
-    projMatrix = perspective(90, 4/3, 0.05, 10);
-    calcProjection();
-    calcModelView();
+    // Setup camera
+    camera.fov  = $('#fov')[0].valueAsNumber;
+    camera.near = $('#near-clip')[0].valueAsNumber;
+    camera.far  = $('#far-clip')[0].valueAsNumber;
+    camera.updateProjection();
 
-    $('#fov, #near-clip, #far-clip').bind('change', calcProjection);
-    $('#distance, #course, #pitch').bind('change', calcModelView);
+    camera.distance = $('#distance')[0].valueAsNumber;
+    camera.course   = $('#course')[0].valueAsNumber;
+    camera.pitch    = $('#pitch')[0].valueAsNumber;
+    camera.updateView();
 
+    $('#fov, #near, #far').bind('input', function(event) {
+        camera[this.id] = this.valueAsNumber;
+        camera.updateProjection();
+        render();
+    });
+
+    $('#distance, #course, #pitch').bind('input', function(event) {
+        camera[this.id] = this.valueAsNumber;
+        camera.updateView();
+        render();
+    });
+
+    canvas.addEventListener("mousedown", function(event) {
+        if (event.buttons != 1)
+            return;
+        lastPosX = event.offsetX;
+        lastPosY = event.offsetY;
+    });
+    canvas.addEventListener("mousemove", function(event) {
+        if (event.buttons != 1)
+            return;
+        var dx = (lastPosX - event.offsetX) / 5;
+        var dy = (lastPosY - event.offsetY) / 5;
+        lastPosX = event.offsetX;
+        lastPosY = event.offsetY;
+
+        camera.course += dx;
+        if (camera.course > 180)
+            camera.course -= 360;
+        else if (camera.course < -180)
+            camera.course += 360;
+        camera.pitch -= dy;
+        if (camera.pitch > 90)
+            camera.pitch = 90;
+        else if (camera.pitch < -90)
+            camera.pitch = -90;
+
+        $('#course').val(camera.course.toFixed());
+        $('#pitch').val(camera.pitch.toFixed());
+
+        camera.updateView();
+        render();
+    });
+
+    canvas.addEventListener('wheel', function(event) {
+        camera.distance += event.deltaY / 5;
+        if (camera.distance < 1)
+           camera.distance = 1;
+        else if (camera.distance > 10)
+           camera.distance = 10;
+        $('#distance').val(camera.distance);
+        camera.updateView();
+        render();
+        event.stopPropagation();
+    });
+
+    // Create button
     $('#create-btn').click(function(event){
         var type = $('#primitive-tabs').tabs('option').active;
         var prim;
@@ -128,7 +170,7 @@ window.onload = function init()
         var rot = [$('#rot-x')[0].valueAsNumber,
                    $('#rot-y')[0].valueAsNumber,
                    $('#rot-z')[0].valueAsNumber];
-        var color = getColorValue($('#color')[0].value);
+        var color = hexToRGB($('#color')[0].value);
         addObject(pos, rot, color, prim);
         render();
     });
@@ -359,13 +401,13 @@ function createCone(r, h, hnum)
 function render()
 {
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-    gl.uniformMatrix4fv( projMatrixLoc, false, flatten(projMatrix) );
+    gl.uniformMatrix4fv( projMatrixLoc, false, flatten(camera.projMatrix) );
 
     var i;
     for (i in objects)
     {
-        var matr = mult(mvMatrix, objects[i].transform);
-        gl.uniformMatrix4fv( mvMatrixLoc, false, flatten(matr) );
+        var mvMatrix = mult(camera.viewMatrix, objects[i].transform);
+        gl.uniformMatrix4fv( mvMatrixLoc, false, flatten(mvMatrix) );
 
         // Associate out shader variables with our data buffer
         gl.bindBuffer( gl.ARRAY_BUFFER, objects[i].vBuffer );
