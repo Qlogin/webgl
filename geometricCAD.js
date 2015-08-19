@@ -60,7 +60,7 @@ window.onload = function init()
     //  Configure WebGL
     //
     gl.viewport( 0, 0, canvas.width, canvas.height );
-    gl.clearColor( 0.91, 0.86, 0.79, 1.0 );
+    gl.clearColor( 0.25, 0.25, 0.25, 1.0 );
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.POLYGON_OFFSET_FILL);
     gl.polygonOffset(1.0, 0.0);
