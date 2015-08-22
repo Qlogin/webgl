@@ -149,9 +149,15 @@ window.onload = function init()
         var type = event.target.value;
         createObject(type, vec3(0, 0, 0));
     });
+    $('#remove-btn').click(function(event){
+        objects.splice(sel_id, 1);
+        $('#obj-list-prop').attr('hidden', 'hidden');
+        $("#obj-list option:selected").remove();
+        render();
+    });
 
     $('#obj-list').bind('change', function(event) {
-        sel_id = parseInt(event.target.value, 10);
+        sel_id = $("#obj-list option:selected").index();
         on_select();
         render();
     });
@@ -206,7 +212,7 @@ function createObject(type, position)
     }
     addObject(prim, position, vec3(0, 0, 0), hexToRGB($('#color')[0].value));
     sel_id = objects.length - 1;
-    $('#obj-list').val(sel_id);
+    $("#obj-list :nth-child(" + (sel_id + 1) + ")").attr("selected", "selected");
     on_select();
     render();
 }
@@ -221,7 +227,7 @@ function addObject(obj, position, orientation, color)
     objects.push(obj);
 
     var full_name = obj.type + ' #' + objects.length;
-    $('#obj-list').append("<option value='" + (objects.length - 1) + "'>" + full_name + "</option>");
+    $('#obj-list').append("<option>" + full_name + "</option>");
 }
 
 function on_select()
