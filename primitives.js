@@ -188,7 +188,7 @@ function Cone(r, h, hnum)
         for (i = 0; i != this.hnum; ++i)
         {
            var c = 2 * Math.PI * i / this.hnum;
-           cone.points.push(vec3(this.r * Math.cos(c), r * Math.sin(c), 0));
+           points.push(vec3(this.r * Math.cos(c), r * Math.sin(c), 0));
         }
         points.push(vec3(0, 0, this.h));
         points.push(vec3(0, 0, 0));
@@ -215,6 +215,7 @@ function Cone(r, h, hnum)
 
     cone.get_lines = function() {
         var indices = [];
+        var i;
         for (i = 0; i != this.hnum; ++i)
         {
             indices.push(i);

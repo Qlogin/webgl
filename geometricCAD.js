@@ -145,59 +145,19 @@ window.onload = function init()
     });
 
     // Create button
-    $('#create-btn').click(function(event){
-        var type = $('#primitive-tabs').tabs('option').active;
-        var prim;
-        if (type == 0)
-        {
-           prim = Sphere($('#sphere-radius')[0].valueAsNumber,
-                         $('#sphere-hor-subdiv')[0].valueAsNumber,
-                         $('#sphere-vert-subdiv')[0].valueAsNumber);
-        }
-        else if (type == 1)
-        {
-           prim = Cylinder($('#cylinder-radius')[0].valueAsNumber,
-                           $('#cylinder-height')[0].valueAsNumber,
-                           $('#cylinder-subdiv')[0].valueAsNumber);
-        }
-        else if (type == 2)
-        {
-           prim = Cone($('#cone-radius')[0].valueAsNumber,
-                       $('#cone-height')[0].valueAsNumber,
-                       $('#cone-subdiv')[0].valueAsNumber);
-        }
-        else
-           return;
-
-        var pos = [$('#pos-x')[0].valueAsNumber,
-                   $('#pos-y')[0].valueAsNumber,
-                   $('#pos-z')[0].valueAsNumber];
-        var rot = [$('#rot-x')[0].valueAsNumber,
-                   $('#rot-y')[0].valueAsNumber,
-                   $('#rot-z')[0].valueAsNumber];
-        var color = hexToRGB($('#color')[0].value);
-        addObject(prim, pos, rot, color);
-        render();
+    $('.create-btn').click(function(event){
+        var type = event.target.value;
+        createObject(type, vec3(0, 0, 0));
     });
 
-    $('#obj-list').bind('change', function(event){
+    $('#obj-list').bind('change', function(event) {
         sel_id = parseInt(event.target.value, 10);
+        on_select();
         render();
-
-        $('#obj-list-prop').removeAttr('hidden');
-
-        var obj = objects[sel_id];
-        $('#sel-color')[0].value = rgbToHex(obj.color[0], obj.color[1], obj.color[2]);
-        $('#sel-pos-x')[0].value = obj.pos[0];
-        $('#sel-pos-y')[0].value = obj.pos[1];
-        $('#sel-pos-z')[0].value = obj.pos[2];
-        $('#sel-rot-x')[0].value = obj.rot[0];
-        $('#sel-rot-y')[0].value = obj.rot[1];
-        $('#sel-rot-z')[0].value = obj.rot[2];
     });
 
-    $('#sel-color').bind('change', function(){
-        objects[sel_id].color = getColorValue($('#sel-color')[0].value);
+    $('#sel-color').bind('change', function(event){
+        objects[sel_id].color = hexToRGB(event.target.value);
         render();
     });
 
@@ -223,6 +183,34 @@ window.onload = function init()
     render();
 };
 
+function createObject(type, position)
+{
+    var prim;
+    if (type == "Shere") {
+       prim = Sphere($('#sphere-radius')[0].valueAsNumber,
+                     $('#sphere-hor-subdiv')[0].valueAsNumber,
+                     $('#sphere-vert-subdiv')[0].valueAsNumber);
+    }
+    else if (type == "Cylinder") {
+       prim = Cylinder($('#cylinder-radius')[0].valueAsNumber,
+                       $('#cylinder-height')[0].valueAsNumber,
+                       $('#cylinder-subdiv')[0].valueAsNumber);
+    }
+    else if (type == "Cone") {
+       prim = Cone($('#cone-radius')[0].valueAsNumber,
+                   $('#cone-height')[0].valueAsNumber,
+                   $('#cone-subdiv')[0].valueAsNumber);
+    }
+    else {
+        return;
+    }
+    addObject(prim, position, vec3(0, 0, 0), hexToRGB($('#color')[0].value));
+    sel_id = objects.length - 1;
+    $('#obj-list').val(sel_id);
+    on_select();
+    render();
+}
+
 function addObject(obj, position, orientation, color)
 {
     obj.pos   = position;
@@ -234,6 +222,20 @@ function addObject(obj, position, orientation, color)
 
     var full_name = obj.type + ' #' + objects.length;
     $('#obj-list').append("<option value='" + (objects.length - 1) + "'>" + full_name + "</option>");
+}
+
+function on_select()
+{
+    $('#obj-list-prop').removeAttr('hidden');
+
+    var obj = objects[sel_id];
+    $('#sel-color')[0].value = rgbToHex(obj.color[0], obj.color[1], obj.color[2]);
+    $('#sel-pos-x')[0].value = obj.pos[0];
+    $('#sel-pos-y')[0].value = obj.pos[1];
+    $('#sel-pos-z')[0].value = obj.pos[2];
+    $('#sel-rot-x')[0].value = obj.rot[0];
+    $('#sel-rot-y')[0].value = obj.rot[1];
+    $('#sel-rot-z')[0].value = obj.rot[2];
 }
 
 function render()
