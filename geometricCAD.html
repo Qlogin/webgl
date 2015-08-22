@@ -34,209 +34,239 @@ void main()
 <script type="text/javascript" src="common/initShaders.js"></script>
 <script type="text/javascript" src="common/MV.js"></script>
 <script type="text/javascript" src="geometricCAD.js"></script>
+<script type="text/javascript" src="primitives.js"></script>
+
+<style type="text/css">
+  .create-btn  { font-size: 12px }
+  .spinner     { width: 30px }
+  .range-value { border: 1px ridge grey; width: 30px; padding: 5px }
+</style>
 
 <script>
     $(function() {
-        $( "#accordion-params" ).accordion({heightStyle: "content"});
+        $( "#accordion" ).accordion({heightStyle: "content"});
         $( "#primitive-tabs" ).tabs();
-        $( "#create-btn" ).button();
+        $( ".create-btn" ).button();
+        $( ".spinner").spinner();
+
+        $("output").each(function(index, el) {
+            var for_el = $("#" + $(el).attr("for"));
+            $(el).val(for_el.attr("value"))
+            for_el.bind("input", function(event) {
+                $(el).val(event.target.value);
+            });
+        });
     });
 </script>
 </head>
 
 <body bgcolor="#101010">
 <div style="width:1210px">
-  <div class="ui-widget-header" style="padding-left:20px">
-      <h1>Assignment 3. Geometric CAD</h1>
-  </div>
-  <div style="height:600px;width:800px;float:left">
-    <center>
-      <canvas id="gl-canvas" width="800" height="600">
-        Oops ... your browser doesn't support the HTML5 canvas element
-      </canvas>
-    </center>
-  </div>
-  <div id="accordion-params"
-       style="font-size:12px;height:600px;width:400px;float:right;">
-    <h3>Create primitive</h3>
-    <div style="padding: 5px">
-      <div id="primitive-tabs">
-        <ul>
-          <li><a href="#sphere-tab">Sphere</a></li>
-          <li><a href="#cylinder-tab">Cylinder</a></li>
-          <li><a href="#cone-tab">Cone</a></li>
-        </ul>
-        <div id="sphere-tab">
-          <table border="0">
-          <tr>
-            <td>Radius:</td>
-            <td align='right'>0.1</td>
-            <td><input id="sphere-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
-            <td>5</td>
-          </tr>
-          <tr>
-            <td>Hor.subdivision:</td>
-            <td align='right'>6</td>
-            <td><input id="sphere-hor-subdiv" type="range" min="6" max="30" step="1" value="16"/></td>
-            <td>30</td>
-          </tr>
-          <tr>
-            <td>Vert.subdivision:</td>
-            <td align='right'>6</td>
-            <td><input id="sphere-vert-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
-            <td>30</td>
-          </tr>
-          </table>
-        </div>
-        <div id="cylinder-tab">
-          <table border="0">
-          <tr>
-            <td>Radius:</td>
-            <td align='right'>0.1</td>
-            <td><input id="cylinder-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
-            <td>5</td>
-          </tr>
-          <tr>
-            <td>Height:</td>
-            <td align='right'>0.1</td>
-            <td><input id="cylinder-height" type="range" min="0.1" max="10" step="0.1" value="2"/></td>
-            <td>10</td>
-          </tr>
-          <tr>
-            <td>Subdivision:</td>
-            <td align='right'>6</td>
-            <td><input id="cylinder-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
-            <td>30</td>
-          </tr>
-          </table>
-        </div>
-        <div id="cone-tab">
-          <table border="0">
-          <tr>
-            <td>Radius:</td>
-            <td align='right'>0.1</td>
-            <td><input id="cone-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
-            <td>5</td>
-          </tr>
-          <tr>
-            <td>Height:</td>
-            <td align='right'>0.1</td>
-            <td><input id="cone-height" type="range" min="0.1" max="10" step="0.1" value="2"/></td>
-            <td>10</td>
-          </tr>
-          <tr>
-            <td>Subdivision:</td>
-            <td align='right'>6</td>
-            <td><input id="cone-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
-            <td>30</td>
-          </tr>
-          </table>
-        </div>
-      </div>
-      <table border="0">
-      <tr>
-        <td>Position:</td>
-        <td>
-          <input id="pos-x" type="number" style="width:50px" value="0" step="0.1">
-          <input id="pos-y" type="number" style="width:50px" value="0" step="0.1">
-          <input id="pos-z" type="number" style="width:50px" value="0" step="0.1">
-        </td>
-      </tr>
-      <tr>
-        <td>Orientation:</td>
-        <td>
-          <input id="rot-x" type="number" style="width:50px" value="0" step="1">
-          <input id="rot-y" type="number" style="width:50px" value="0" step="1">
-          <input id="rot-z" type="number" style="width:50px" value="0" step="1">
-        </td>
-      </tr>
-      <tr>
-        <td>Color:</td>
-        <td><input id="color" type="color" value="#0000ff"></td>
-      </tr>
-      </table>
-      <input id="create-btn" type="button" value="Create" style="float:right;">
+    <div class="ui-widget-header" style="padding-left:20px">
+        <h1>Assignment 3. Geometric CAD</h1>
     </div>
-    <h3>Camera settings</h3>
-    <div style="padding: 5px">
-      <table border="0">
-      <tr>
-        <td>Distance:</td>
-        <td align='right'>1</td>
-        <td><input id="distance" type="range" min="1" max="10" step="0.2" value="5"/></td>
-        <td>10</td>
-      </tr>
-      <tr>
-        <td>Course:</td>
-        <td align='right'>-180</td>
-        <td><input id="course" type="range" min="-180" max="180" step="1" value="0"/></td>
-        <td>180</td>
-      </tr>
-      <tr>
-        <td>Pitch:</td>
-        <td align='right'>-90</td>
-        <td><input id="pitch" type="range" min="-90" max="90" step="1" value="30"/></td>
-        <td>90</td>
-      </tr>
-      <tr><td colspan=4><hr></td></tr>
-      <tr>
-        <td>FOV:</td>
-        <td align='right'>30</td>
-        <td><input id="fov" type="range" min="30" max="120" step="5" value="90"/></td>
-        <td>120</td>
-      </tr>
-      <tr>
-        <td>Near clip:</td>
-        <td align='right'>0.01</td>
-        <td><input id="near-clip" type="range" min="0.01" max="1" step="0.01" value="0.1"/></td>
-        <td>1</td>
-      </tr>
-      <tr>
-        <td>Far clip:</td>
-        <td align='right'>10</td>
-        <td><input id="far-clip" type="range" min="10" max="100" step="1" value="20"/></td>
-        <td>100</td>
-      </tr>
-      </table>
+    <div style="height:600px;width:800px;float:left">
+        <center>
+            <canvas id="gl-canvas" width="800" height="600">
+                Oops ... your browser doesn't support the HTML5 canvas element
+            </canvas>
+        </center>
     </div>
-    <h3>Scene objects</h3>
-    <div style="padding: 5px">
-      <table border="0">
-      <tr>
-        <td><select size="20" id="obj-list" style="width:100px"></select></td>
-        <td valign="top">
-          <table border="0" id="obj-list-prop" hidden="hidden">
-          <tr>
-            <td>Position:</td>
-            <td>
-              <input id="sel-pos-x" type="number" style="width:50px" value="0" step="0.1">
-              <input id="sel-pos-y" type="number" style="width:50px" value="0" step="0.1">
-              <input id="sel-pos-z" type="number" style="width:50px" value="0" step="0.1">
-            </td>
-          </tr>
-          <tr>
-            <td>Orientation:</td>
-            <td>
-              <input id="sel-rot-x" type="number" style="width:50px" value="0" step="1">
-              <input id="sel-rot-y" type="number" style="width:50px" value="0" step="1">
-              <input id="sel-rot-z" type="number" style="width:50px" value="0" step="1">
-            </td>
-          </tr>
-          <tr>
-            <td>Color:</td>
-            <td><input id="sel-color" type="color" value="#0000ff"></td>
-          </tr>
-          </table>
-        </td>
-      </tr>
-      </table>
+    <div id="params-panel" style="height:600px;width:400px;float:right;">
+        <div id="accordion" style="font-size:12px;">
+            <h3>Scene objects</h3>
+            <div style="padding: 5px">
+                <table border="0">
+                <tr>
+                    <td><select size="20" id="obj-list" style="width:100px;color:white;background:#404040"></select></td>
+                    <td valign="top">
+                        <table border="0" id="obj-list-prop" hidden="hidden">
+                        <tr>
+                            <td>Position:</td>
+                            <td>
+                                <input id="sel-pos-x" class="spinner" value="0" step="0.1">
+                                <input id="sel-pos-y" class="spinner" value="0" step="0.1">
+                                <input id="sel-pos-z" class="spinner" value="0" step="0.1">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Orientation:</td>
+                            <td>
+                                <input id="sel-rot-x" class="spinner" value="0" step="1" min="-360" max="360">
+                                <input id="sel-rot-y" class="spinner" value="0" step="1" min="-360" max="360">
+                                <input id="sel-rot-z" class="spinner" value="0" step="1" min="-360" max="360">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Color:</td>
+                            <td><input id="sel-color" type="color" value="#0000ff"></td>
+                        </tr>
+                        </table>
+                    </td>
+                </tr>
+                </table>
+            </div>
+            <h3>Camera settings</h3>
+            <div style="padding: 5px">
+                <table border="0">
+                <tr>
+                    <td>Distance:</td>
+                    <td align='right'>1</td>
+                    <td><input id="distance" type="range" min="1" max="30" step="0.2" value="5"/></td>
+                    <td>30</td>
+                    <td><div class="range-value"><output for="distance"></output></div></td>
+                </tr>
+                <tr>
+                    <td>Course:</td>
+                    <td align='right'>-180</td>
+                    <td><input id="course" type="range" min="-180" max="180" step="1" value="0"/></td>
+                    <td>180</td>
+                    <td><div class="range-value"><output for="course"></output></div></td>
+                </tr>
+                <tr>
+                    <td>Pitch:</td>
+                    <td align='right'>-90</td>
+                    <td><input id="pitch" type="range" min="-90" max="90" step="1" value="30"/></td>
+                    <td>90</td>
+                    <td><div class="range-value"><output for="pitch"></output></div></td>
+                </tr>
+                <tr><td colspan=5><hr></td></tr>
+                <tr>
+                    <td>FOV:</td>
+                    <td align='right'>20</td>
+                    <td><input id="fov" type="range" min="20" max="90" step="5" value="45"/></td>
+                    <td>90</td>
+                    <td><div class="range-value"><output for="fov"></output></div></td>
+                </tr>
+                <tr>
+                    <td>Near clip:</td>
+                    <td align='right'>0.01</td>
+                    <td><input id="near-clip" type="range" min="0.01" max="1" step="0.01" value="0.1"/></td>
+                    <td>1</td>
+                    <td><div class="range-value"><output for="near-clip"></output></div></td>
+                </tr>
+                <tr>
+                    <td>Far clip:</td>
+                    <td align='right'>10</td>
+                    <td><input id="far-clip" type="range" min="10" max="50" step="1" value="20"/></td>
+                    <td>50</td>
+                    <td><div class="range-value"><output for="far-clip"></output></div></td>
+                </tr>
+                </table>
+            </div>
+            <h3>Object creation settings</h3>
+            <div style="padding: 5px">
+                <div id="primitive-tabs">
+                    <ul>
+                        <li><a href="#sphere-tab">Sphere</a></li>
+                        <li><a href="#cylinder-tab">Cylinder</a></li>
+                        <li><a href="#cone-tab">Cone</a></li>
+                    </ul>
+                    <div id="sphere-tab">
+                        <table border="0">
+                        <tr>
+                            <td>Radius:</td>
+                            <td align='right'>0.1</td>
+                            <td><input id="sphere-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
+                            <td>5</td>
+                            <td><div class="range-value"><output for="sphere-radius"></output></div></td>
+                        </tr>
+                        <tr>
+                            <td>Hor.subdivision:</td>
+                            <td align='right'>6</td>
+                            <td><input id="sphere-hor-subdiv" type="range" min="6" max="30" step="1" value="16"/></td>
+                            <td>30</td>
+                            <td><div class="range-value"><output for="sphere-hor-subdiv"></output></div></td>
+                        </tr>
+                        <tr>
+                            <td>Vert.subdivision:</td>
+                            <td align='right'>6</td>
+                            <td><input id="sphere-vert-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
+                            <td>30</td>
+                            <td><div class="range-value"><output for="sphere-vert-subdiv"></output></div></td>
+                        </tr>
+                        </table>
+                    </div>
+                    <div id="cylinder-tab">
+                        <table border="0">
+                        <tr>
+                            <td>Radius:</td>
+                            <td align='right'>0.1</td>
+                            <td><input id="cylinder-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
+                            <td>5</td>
+                            <td><div class="range-value"><output for="cylinder-radius"></output></div></td>
+                        </tr>
+                        <tr>
+                            <td>Height:</td>
+                            <td align='right'>0.1</td>
+                            <td><input id="cylinder-height" type="range" min="0.1" max="10" step="0.1" value="2"/></td>
+                            <td>10</td>
+                            <td><div class="range-value"><output for="cylinder-height"></output></div></td>
+                        </tr>
+                        <tr>
+                            <td>Subdivision:</td>
+                            <td align='right'>6</td>
+                            <td><input id="cylinder-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
+                            <td>30</td>
+                            <td><div class="range-value"><output for="cylinder-subdiv"></output></div></td>
+                        </tr>
+                        </table>
+                    </div>
+                    <div id="cone-tab">
+                        <table border="0">
+                        <tr>
+                            <td>Radius:</td>
+                            <td align='right'>0.1</td>
+                            <td><input id="cone-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
+                            <td>5</td>
+                            <td><div class="range-value"><output for="cone-radius"></output></div></td>
+                        </tr>
+                        <tr>
+                            <td>Height:</td>
+                            <td align='right'>0.1</td>
+                            <td><input id="cone-height" type="range" min="0.1" max="10" step="0.1" value="2"/></td>
+                            <td>10</td>
+                            <td><div class="range-value"><output for="cone-height"></output></div></td>
+                        </tr>
+                        <tr>
+                            <td>Subdivision:</td>
+                            <td align='right'>6</td>
+                            <td><input id="cone-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
+                            <td>30</td>
+                            <td><div class="range-value"><output for="cone-subdiv"></output></div></td>
+                        </tr>
+                        </table>
+                    </div>
+                </div>
+                <table border="0">
+                <tr>
+                    <td>Color:</td>
+                    <td><input id="color" type="color" value="#0000ff"></td>
+                </tr>
+                <tr>
+                    <td>Interactive placement:</td>
+                    <td><input type="checkbox" id="interactive" checked="checked"></td>
+                </tr>
+                </table>
+            </div>
+        </div>
     </div>
-  </div>
-  <div style="background-color:#272823;color:white;clear:both">
-    <center>
-      Copyright © 2015 Roman Kulagin (Qlogin)
-    </center>
-  </div>
+        <div id="create-btns" style="color:white;position:absolute">
+            <form>
+                <fieldset>
+                    <legend>Create</legend>
+                    <input type="button" class="create-btn" id="sphere-btn" value="Sphere">
+                    <input type="button" class="create-btn" id="cylinder-btn" value="Cylinder">
+                    <input type="button" class="create-btn" id="cone-btn" value="Cone">
+                </fieldset>
+            </form>
+        </div>
+
+    <div style="background-color:#272823;color:white;clear:both">
+        <center>
+            Copyright © 2015 Roman Kulagin (Qlogin)
+        </center>
+    </div>
 </div>
 </body>
 </html>
