@@ -61,7 +61,7 @@ void main()
 </head>
 
 <body bgcolor="#101010">
-<div style="width:1210px">
+<div style="width:1260px">
     <div class="ui-widget-header" style="padding-left:20px">
         <h1>Assignment 3. Geometric CAD</h1>
     </div>
@@ -72,7 +72,7 @@ void main()
             </canvas>
         </center>
     </div>
-    <div id="params-panel" style="height:600px;width:400px;float:right;">
+    <div id="params-panel" style="height:600px;width:450px;float:right;">
         <div id="accordion" style="font-size:12px;">
             <h3>Scene objects</h3>
             <div style="padding: 5px">
@@ -80,6 +80,82 @@ void main()
                 <tr>
                     <td><select size="20" id="obj-list" style="width:100px;color:white;background:#404040"></select></td>
                     <td valign="top">
+                        <div class="prim-prop" id="Sphere" hidden="hidden">
+                            <table border="0">
+                            <tr>
+                                <td>Radius:</td>
+                                <td align='right'>0.1</td>
+                                <td><input id="sel-sphere-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
+                                <td>5</td>
+                                <td><div class="range-value"><output for="sel-sphere-radius"></output></div></td>
+                            </tr>
+                            <tr>
+                                <td>Hor.subdiv:</td>
+                                <td align='right'>6</td>
+                                <td><input id="sel-sphere-hor-subdiv" type="range" min="6" max="30" step="1" value="16"/></td>
+                                <td>30</td>
+                                <td><div class="range-value"><output for="sel-sphere-hor-subdiv"></output></div></td>
+                            </tr>
+                            <tr>
+                                <td>Vert.subdiv:</td>
+                                <td align='right'>6</td>
+                                <td><input id="sel-sphere-vert-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
+                                <td>30</td>
+                                <td><div class="range-value"><output for="sel-sphere-vert-subdiv"></output></div></td>
+                            </tr>
+                            </table>
+                        </div>
+                        <div class="prim-prop" id="Cylinder" hidden="hidden">
+                            <table border="0">
+                            <tr>
+                                <td>Radius:</td>
+                                <td align='right'>0.1</td>
+                                <td><input id="sel-cylinder-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
+                                <td>5</td>
+                                <td><div class="range-value"><output for="sel-cylinder-radius"></output></div></td>
+                            </tr>
+                            <tr>
+                                <td>Height:</td>
+                                <td align='right'>0.1</td>
+                                <td><input id="sel-cylinder-height" type="range" min="0.1" max="10" step="0.1" value="2"/></td>
+                                <td>10</td>
+                                <td><div class="range-value"><output for="sel-cylinder-height"></output></div></td>
+                            </tr>
+                            <tr>
+                                <td>Subdivision:</td>
+                                <td align='right'>6</td>
+                                <td><input id="sel-cylinder-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
+                                <td>30</td>
+                                <td><div class="range-value"><output for="sel-cylinder-subdiv"></output></div></td>
+                            </tr>
+                            </table>
+                        </div>
+                        <div class="prim-prop" id="Cone" hidden="hidden">
+                            <table border="0">
+                            <tr>
+                                <td>Radius:</td>
+                                <td align='right'>0.1</td>
+                                <td><input id="sel-cone-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
+                                <td>5</td>
+                                <td><div class="range-value"><output for="sel-cone-radius"></output></div></td>
+                            </tr>
+                            <tr>
+                                <td>Height:</td>
+                                <td align='right'>0.1</td>
+                                <td><input id="sel-cone-height" type="range" min="0.1" max="10" step="0.1" value="2"/></td>
+                                <td>10</td>
+                                <td><div class="range-value"><output for="sel-cone-height"></output></div></td>
+                            </tr>
+                            <tr>
+                                <td>Subdivision:</td>
+                                <td align='right'>6</td>
+                                <td><input id="sel-cone-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
+                                <td>30</td>
+                                <td><div class="range-value"><output for="sel-cone-subdiv"></output></div></td>
+                            </tr>
+                            </table>
+                        </div>
+                        <hr>
                         <table border="0" id="obj-list-prop" hidden="hidden">
                         <tr>
                             <td>Position:</td>

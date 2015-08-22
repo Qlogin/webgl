@@ -167,7 +167,34 @@ window.onload = function init()
         render();
     });
 
-    $('#sel-pos-x, #sel-pos-y, #sel-pos-z').on('spin spinchange', function() {
+    $('#sel-sphere-radius, #sel-sphere-hor-subdiv, #sel-sphere-vert-subdiv')
+        .bind('input', function() {
+            objects[sel_id].r    = $('#sel-sphere-radius')[0].valueAsNumber;
+            objects[sel_id].hnum = $('#sel-sphere-hor-subdiv')[0].valueAsNumber;
+            objects[sel_id].vnum = $('#sel-sphere-vert-subdiv')[0].valueAsNumber;
+            objects[sel_id].update_buffers();
+            render();
+        });
+
+    $('#sel-cylinder-radius, #sel-cylinder-height, #sel-cylinder-subdiv')
+        .bind('input', function() {
+            objects[sel_id].r    = $('#sel-cylinder-radius')[0].valueAsNumber;
+            objects[sel_id].h    = $('#sel-cylinder-height')[0].valueAsNumber;
+            objects[sel_id].hnum = $('#sel-cylinder-subdiv')[0].valueAsNumber;
+            objects[sel_id].update_buffers();
+            render();
+        });
+
+    $('#sel-cone-radius, #sel-cone-height, #sel-cone-subdiv')
+        .bind('input', function() {
+            objects[sel_id].r    = $('#sel-cone-radius')[0].valueAsNumber;
+            objects[sel_id].h    = $('#sel-cone-height')[0].valueAsNumber;
+            objects[sel_id].hnum = $('#sel-cone-subdiv')[0].valueAsNumber;
+            objects[sel_id].update_buffers();
+            render();
+        });
+
+    $('#sel-pos-x, #sel-pos-y, #sel-pos-z').bind('spin spinchange', function() {
         objects[sel_id].pos = vec3($('#sel-pos-x').spinner("value"),
                                    $('#sel-pos-y').spinner("value"),
                                    $('#sel-pos-z').spinner("value"));
@@ -232,16 +259,37 @@ function addObject(obj, position, orientation, color)
 
 function on_select()
 {
-    $('#obj-list-prop').removeAttr('hidden');
-
     var obj = objects[sel_id];
-    $('#sel-color')[0].value = rgbToHex(obj.color[0], obj.color[1], obj.color[2]);
-    $('#sel-pos-x')[0].value = obj.pos[0];
-    $('#sel-pos-y')[0].value = obj.pos[1];
-    $('#sel-pos-z')[0].value = obj.pos[2];
-    $('#sel-rot-x')[0].value = obj.rot[0];
-    $('#sel-rot-y')[0].value = obj.rot[1];
-    $('#sel-rot-z')[0].value = obj.rot[2];
+    $('#obj-list-prop').removeAttr('hidden');
+    $('.prim-prop').attr('hidden', 'hidden');
+    $('.prim-prop#' + obj.type).removeAttr('hidden');
+
+    if (obj.type == "Sphere")
+    {
+        $('#sel-sphere-radius').val(obj.r);
+        $('#sel-sphere-hor-subdiv').val(obj.hnum);
+        $('#sel-sphere-vert-subdiv').val(obj.vnum);
+    }
+    else if (obj.type == "Cylinder")
+    {
+        $('#sel-cylinder-radius').val(obj.r);
+        $('#sel-cylinder-height').val(obj.h);
+        $('#sel-cylinder-subdiv').val(obj.hnum);
+    }
+    else if (obj.type == "Cone")
+    {
+        $('#sel-cone-radius').val(obj.r);
+        $('#sel-cone-height').val(obj.h);
+        $('#sel-cone-subdiv').val(obj.hnum);
+    }
+
+    $('#sel-color').val(rgbToHex(obj.color[0], obj.color[1], obj.color[2]));
+    $('#sel-pos-x').val(obj.pos[0]);
+    $('#sel-pos-y').val(obj.pos[1]);
+    $('#sel-pos-z').val(obj.pos[2]);
+    $('#sel-rot-x').val(obj.rot[0]);
+    $('#sel-rot-y').val(obj.rot[1]);
+    $('#sel-rot-z').val(obj.rot[2]);
 }
 
 function render()

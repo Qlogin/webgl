@@ -62,9 +62,9 @@ function Sphere(r, hnum, vnum)
             for (j = 0; j != this.hnum; ++j)
             {
                 var c = 2 * Math.PI * j / this.hnum;
-                points.push(vec3(r * Math.cos(p) * Math.cos(c),
-                                 r * Math.cos(p) * Math.sin(c),
-                                 r * Math.sin(p)));
+                points.push(vec3(this.r * Math.cos(p) * Math.cos(c),
+                                 this.r * Math.cos(p) * Math.sin(c),
+                                 this.r * Math.sin(p)));
             }
         }
         return points;
@@ -89,13 +89,13 @@ function Sphere(r, hnum, vnum)
     sphere.get_lines = function() {
         var indices = [];
         var i, j;
-        for (i = 0; i != vnum; ++i)
-            for (j = 0; j != hnum; ++j)
+        for (i = 0; i != this.vnum; ++i)
+            for (j = 0; j != this.hnum; ++j)
             {
-               indices.push(i * hnum + j);
-               indices.push(i * hnum + (j + 1) % hnum);
-               indices.push(i * hnum + j);
-               indices.push((i + 1) * hnum + j);
+               indices.push(i * this.hnum + j);
+               indices.push(i * this.hnum + (j + 1) % this.hnum);
+               indices.push(i * this.hnum + j);
+               indices.push((i + 1) * this.hnum + j);
             }
         return indices;
     };
@@ -153,7 +153,7 @@ function Cylinder(r, h, hnum)
         var indices = [];
         var vcap = 2 * this.hnum;
         var i;
-        for (i = 0; i != hnum; ++i)
+        for (i = 0; i != this.hnum; ++i)
         {
             // Side
             indices.push(2 * ((i + 1) % this.hnum));
@@ -188,7 +188,7 @@ function Cone(r, h, hnum)
         for (i = 0; i != this.hnum; ++i)
         {
            var c = 2 * Math.PI * i / this.hnum;
-           points.push(vec3(this.r * Math.cos(c), r * Math.sin(c), 0));
+           points.push(vec3(this.r * Math.cos(c), this.r * Math.sin(c), 0));
         }
         points.push(vec3(0, 0, this.h));
         points.push(vec3(0, 0, 0));
