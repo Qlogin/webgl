@@ -12,6 +12,7 @@ var sel_id = -1;
 
 var lastPosX = 0;
 var lastPosY = 0;
+var creaType = '';
 
 var camera = {
     viewMatrix : mat4(),
@@ -23,16 +24,17 @@ var camera = {
     fov        : 90,
     near       : 0.1,
     far        : 10,
+    eye        : vec3(),
 
     updateView : function() {
         var r = this.distance;
         var c = radians(this.course);
         var p = radians(this.pitch);
 
-        var eye = vec3(r * Math.cos(p) * Math.cos(c),
-                       r * Math.cos(p) * Math.sin(c),
-                       r * Math.sin(p));
-        this.viewMatrix = lookAt(eye, vec3(0,0,0), vec3(0,0,1));
+        this.eye = vec3(r * Math.cos(p) * Math.cos(c),
+                        r * Math.cos(p) * Math.sin(c),
+                        r * Math.sin(p));
+        this.viewMatrix = lookAt(this.eye, vec3(0,0,0), vec3(0,0,1));
         this.vpMatrix = mult(this.projMatrix, this.viewMatrix);
     },
 
@@ -69,8 +71,8 @@ window.onload = function init()
 
     // Setup camera
     camera.fov  = $('#fov')[0].valueAsNumber;
-    camera.near = $('#near-clip')[0].valueAsNumber;
-    camera.far  = $('#far-clip')[0].valueAsNumber;
+    camera.near = $('#near')[0].valueAsNumber;
+    camera.far  = $('#far')[0].valueAsNumber;
     camera.updateProjection();
 
     camera.distance = $('#distance')[0].valueAsNumber;
@@ -95,6 +97,14 @@ window.onload = function init()
             return;
         lastPosX = event.offsetX;
         lastPosY = event.offsetY;
+
+        if (creaType != '')
+        {
+            var pos = screen2global(lastPosX, lastPosY);
+            createObject(creaType, pos);
+            $('#gl-canvas, #create-btns, .create-btn').css('cursor', 'auto');
+            creaType = '';
+        }
     });
     canvas.addEventListener("mousemove", function(event) {
         if (event.buttons != 1)
@@ -147,7 +157,9 @@ window.onload = function init()
     // Create button
     $('.create-btn').click(function(event){
         var type = event.target.value;
-        createObject(type, vec3(0, 0, 0));
+        creaType = type;
+        //createObject(type, vec3(0, 0, 0));
+        $('#gl-canvas, #create-btns, .create-btn').css('cursor', 'crosshair');
     });
     $('#remove-btn').click(function(event){
         objects.splice(sel_id, 1);
@@ -219,7 +231,7 @@ window.onload = function init()
 function createObject(type, position)
 {
     var prim;
-    if (type == "Shere") {
+    if (type == "Sphere") {
        prim = Sphere($('#sphere-radius')[0].valueAsNumber,
                      $('#sphere-hor-subdiv')[0].valueAsNumber,
                      $('#sphere-vert-subdiv')[0].valueAsNumber);
@@ -290,6 +302,30 @@ function on_select()
     $('#sel-rot-x').val(obj.rot[0]);
     $('#sel-rot-y').val(obj.rot[1]);
     $('#sel-rot-z').val(obj.rot[2]);
+}
+
+function screen2global(x, y)
+{
+    var k = camera.near * Math.tan(radians(camera.fov) / 2);
+    var aratio = canvas.width / canvas.height;
+    var dx = (2 * x / canvas.width - 1) * k * aratio;
+    var dy = (1 - 2 * y / canvas.height) * k;
+    var view  = normalize(negate(camera.eye));
+    var right = normalize(cross(view, vec3(0, 0, 1)));
+    var up    = normalize(cross(right, view));
+
+    for (var i = 0; i != 3; ++i)
+    {
+        view[i] *= camera.near;
+        right[i] *= dx;
+        up[i] *= dy;
+    }
+
+    var dir = add(add(view, right), up);
+    var t = -camera.eye[2] / dir[2];
+    var pos = vec3((camera.eye[0] + t * dir[0]).toFixed(1),
+                   (camera.eye[1] + t * dir[1]).toFixed(1), 0);
+    return pos;
 }
 
 function render()
