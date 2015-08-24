@@ -4,10 +4,11 @@ var canvas;
 var gl;
 
 var vPosLoc;
-var colorLoc;
-var mvpMatrixLoc;
+var vNormLoc;
+var uLoc = {};
 
 var objects = [];
+var lights  = [];
 var sel_id = -1;
 
 var lastPosX = 0;
@@ -25,6 +26,8 @@ var camera = {
     near       : 0.1,
     far        : 10,
     eye        : vec3(),
+    fog_color  : vec3(),
+    fog_density: 0.0,
 
     updateView : function() {
         var r = this.distance;
@@ -34,6 +37,7 @@ var camera = {
         this.eye = vec3(r * Math.cos(p) * Math.cos(c),
                         r * Math.cos(p) * Math.sin(c),
                         r * Math.sin(p));
+        lights[0].pos = vec4(this.eye[0], this.eye[1], this.eye[2], 0);
         this.viewMatrix = lookAt(this.eye, vec3(0,0,0), vec3(0,0,1));
         this.vpMatrix = mult(this.projMatrix, this.viewMatrix);
     },
@@ -45,6 +49,21 @@ var camera = {
     }
 };
 
+function Light(pos, color)
+{
+    return {
+        'pos'      : pos,
+        'ambient'  : vec3(0, 0, 0),
+        'diffuse'  : color,
+        'specular' : color,
+    };
+}
+
+lights.push(Light(vec4(1, 1, 1, 0)  , vec3(1, 1, 1)));
+lights.push(Light(vec4(-1, -1, 1, 0), vec3(1, 1, 1)));
+lights.push(Light(vec4(10, 0, 5, 1) , vec3(1, 0, 0)));
+lights.push(Light(vec4(-10, 0, 0, 1), vec3(0, 0, 1)));
+
 window.onload = function init()
 {
     canvas = document.getElementById("gl-canvas");
@@ -55,8 +74,13 @@ window.onload = function init()
     //
     //  Configure WebGL
     //
-    gl.viewport( 0, 0, canvas.width, canvas.height );
-    gl.clearColor( 0.25, 0.25, 0.25, 1.0 );
+    camera.fog_color = hexToRGB($('#fog-color')[0].value);
+    camera.fog_density = $('#fog-density')[0].valueAsNumber;
+
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(camera.fog_color[0],
+                  camera.fog_color[1],
+                  camera.fog_color[2], 1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.POLYGON_OFFSET_FILL);
     gl.polygonOffset(1.0, 0.0);
@@ -65,9 +89,18 @@ window.onload = function init()
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-    vPosLoc = gl.getAttribLocation( program, "vPos" );
-    colorLoc      = gl.getUniformLocation(program, "color");
-    mvpMatrixLoc   = gl.getUniformLocation(program, "mvpMatrix");
+    vPosLoc  = gl.getAttribLocation(program, "vPos");
+    vNormLoc = gl.getAttribLocation(program, "vNorm");
+    uLoc.mvProj       = gl.getUniformLocation(program, "mvProj");
+    uLoc.modelView    = gl.getUniformLocation(program, "modelView");
+    uLoc.normalMatrix = gl.getUniformLocation(program, "normalMatrix");
+    uLoc.light_pos    = gl.getUniformLocation(program, "light_pos");
+    uLoc.ambient_prod = gl.getUniformLocation(program, "ambient_prod");
+    uLoc.diffuse_prod = gl.getUniformLocation(program, "diffuse_prod");
+    uLoc.specular_prod = gl.getUniformLocation(program, "specular_prod");
+    uLoc.shininess     = gl.getUniformLocation(program, "shininess");
+    uLoc.fog_color     = gl.getUniformLocation(program, "fog_color");
+    uLoc.fog_density   = gl.getUniformLocation(program, "fog_density");
 
     // Setup camera
     camera.fov  = $('#fov')[0].valueAsNumber;
@@ -89,6 +122,16 @@ window.onload = function init()
     $('#distance, #course, #pitch').bind('input', function(event) {
         camera[this.id] = this.valueAsNumber;
         camera.updateView();
+        render();
+    });
+
+    $('#fog-color').bind('change', function(event) {
+        camera.fog_color = hexToRGB(event.target.value);
+        render();
+    });
+
+    $('#fog-density').bind('input', function(event) {
+        camera.fog_density = event.target.valueAsNumber;
         render();
     });
 
@@ -155,15 +198,20 @@ window.onload = function init()
     });
 
     // Create button
-    $('.create-btn').click(function(event){
+    $('.create-btn').click(function(event) {
         var type = event.target.value;
-        creaType = type;
-        //createObject(type, vec3(0, 0, 0));
-        $('#gl-canvas, #create-btns, .create-btn').css('cursor', 'crosshair');
+        if (!$('#interactive')[0].checked) {
+            createObject(type, vec3(0, 0, 0));
+        }
+        else {
+            creaType = type;
+            $('#gl-canvas, #create-btns, .create-btn').css('cursor', 'crosshair');
+        }
     });
     $('#remove-btn').click(function(event){
         objects.splice(sel_id, 1);
         $('#obj-list-prop').attr('hidden', 'hidden');
+        $('.prim-prop').attr('hidden', 'hidden');
         $("#obj-list option:selected").remove();
         render();
     });
@@ -174,8 +222,23 @@ window.onload = function init()
         render();
     });
 
-    $('#sel-color').bind('change', function(event){
-        objects[sel_id].color = hexToRGB(event.target.value);
+    $('#sel-ambient').bind('change', function(event){
+        objects[sel_id].ambient = hexToRGB(event.target.value);
+        render();
+    });
+
+    $('#sel-diffuse').bind('change', function(event){
+        objects[sel_id].diffuse = hexToRGB(event.target.value);
+        render();
+    });
+
+    $('#sel-specular').bind('change', function(event) {
+        objects[sel_id].specular = hexToRGB(event.target.value);
+        render();
+    });
+
+    $('#sel-shininess').bind('input', function(event) {
+        objects[sel_id].shininess = event.target.valueAsNumber;
         render();
     });
 
@@ -222,8 +285,9 @@ window.onload = function init()
         render();
     });
 
-    addObject(Sphere(1, 16, 12), [0, 0, 1], [0, 0, 0], [1, 0, 0]);
+    addObject(Sphere(1, 20, 18), [0, 0, 1], [0, 0, 0], [1, 0, 0]);
     addObject(Cylinder(0.5, 2, 15), [1.5, -1.5, 0.5], [0, -30, 0], [0, 1, 0]);
+    addObject(Cone(1, 2, 16), [-5, -8, 0], [0, 0, 0], [0, 0, 1]);
 
     render();
 };
@@ -260,7 +324,10 @@ function addObject(obj, position, orientation, color)
 {
     obj.pos   = position;
     obj.rot   = orientation;
-    obj.color = color;
+    obj.ambient  = color;
+    obj.diffuse  = color;
+    obj.specular = vec3(1, 1, 1);
+    obj.shininess = 64;
     obj.update_transform();
 
     objects.push(obj);
@@ -295,7 +362,10 @@ function on_select()
         $('#sel-cone-subdiv').val(obj.hnum);
     }
 
-    $('#sel-color').val(rgbToHex(obj.color[0], obj.color[1], obj.color[2]));
+    $('#sel-ambient').val(rgbToHex(obj.ambient[0]  , obj.ambient[1] , obj.ambient[2]));
+    $('#sel-diffuse').val(rgbToHex(obj.diffuse[0]  , obj.diffuse[1] , obj.diffuse[2]));
+    $('#sel-specular').val(rgbToHex(obj.specular[0], obj.specular[1], obj.specular[2]));
+
     $('#sel-pos-x').val(obj.pos[0]);
     $('#sel-pos-y').val(obj.pos[1]);
     $('#sel-pos-z').val(obj.pos[2]);
@@ -331,29 +401,54 @@ function screen2global(x, y)
 function render()
 {
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    gl.uniform3fv(uLoc.fog_color, camera.fog_color);
+    gl.uniform1f(uLoc.fog_density, camera.fog_density);
 
     var i;
     for (i in objects)
     {
-        var mvpMatrix = mult(camera.vpMatrix, objects[i].transform);
-        gl.uniformMatrix4fv(mvpMatrixLoc, false, flatten(mvpMatrix));
+        var mvProj = mult(camera.vpMatrix, objects[i].transform);
+        gl.uniformMatrix4fv(uLoc.mvProj, false, flatten(mvProj));
+        var modelView = mult(camera.viewMatrix, objects[i].transform);
+        gl.uniformMatrix4fv(uLoc.modelView, false, flatten(modelView));
+        gl.uniformMatrix3fv(uLoc.normalMatrix, false, flatten(normalMatrix(modelView, true)));
 
         // Associate out shader variables with our data buffer
         gl.bindBuffer( gl.ARRAY_BUFFER, objects[i].vBuffer );
         gl.vertexAttribPointer( vPosLoc, 3, gl.FLOAT, false, 0, 0 );
         gl.enableVertexAttribArray( vPosLoc );
 
+        gl.bindBuffer( gl.ARRAY_BUFFER, objects[i].nBuffer );
+        gl.vertexAttribPointer( vNormLoc, 3, gl.FLOAT, false, 0, 0 );
+        gl.enableVertexAttribArray( vNormLoc );
+
         // Draw
-        gl.uniform3fv  ( colorLoc, objects[i].color );
+        var pos  = [];
+        var amb_prod  = [];
+        var diff_prod = [];
+        var spec_prod = [];
+        for (var j = 0; j != 4; ++j)
+        {
+            pos = pos.concat(mult(camera.viewMatrix, lights[j].pos));
+            amb_prod = amb_prod.concat(mult(lights[j].ambient, objects[i].ambient));
+            diff_prod = diff_prod.concat(mult(lights[j].diffuse, objects[i].diffuse));
+            spec_prod = spec_prod.concat(mult(lights[j].specular, objects[i].specular));
+        }
+
+        gl.uniform4fv  ( uLoc.light_pos, pos );
+        gl.uniform3fv  ( uLoc.ambient_prod , amb_prod );
+        gl.uniform3fv  ( uLoc.diffuse_prod , diff_prod );
+        gl.uniform3fv  ( uLoc.specular_prod, spec_prod );
+        gl.uniform1f   ( uLoc.shininess, objects[i].shininess );
         gl.bindBuffer  ( gl.ELEMENT_ARRAY_BUFFER, objects[i].triBuffer );
         gl.drawElements( gl.TRIANGLES, objects[i].triNum, gl.UNSIGNED_SHORT, 0);
 
-        if (i == sel_id)
-            gl.uniform3fv( colorLoc, [0, 1, 1] );
-        else
-            gl.uniform3fv( colorLoc, [0.2, 0.2, 0.2] );
+        //if (i == sel_id)
+            //gl.uniform3fv( colorLoc, [0, 1, 1] );
+        //else
+            //gl.uniform3fv( colorLoc, [0.2, 0.2, 0.2] );
 
-        gl.bindBuffer  ( gl.ELEMENT_ARRAY_BUFFER, objects[i].lineBuffer );
-        gl.drawElements( gl.LINES, objects[i].lineNum, gl.UNSIGNED_SHORT, 0);
+        //gl.bindBuffer  ( gl.ELEMENT_ARRAY_BUFFER, objects[i].lineBuffer );
+        //gl.drawElements( gl.LINES, objects[i].lineNum, gl.UNSIGNED_SHORT, 0);
     }
 }

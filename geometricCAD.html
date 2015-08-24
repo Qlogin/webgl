@@ -6,23 +6,70 @@
 
 <script id="vertex-shader" type="x-shader/x-vertex">
 attribute vec4 vPos;
+attribute vec3 vNorm;
 
-uniform mat4 mvpMatrix;
+varying vec3 posView;
+varying vec3 normView;
+varying vec3 reflView;
+
+uniform mat4 mvProj;
+uniform mat4 modelView;
+uniform mat3 normalMatrix;
 
 void main()
 {
-    gl_Position = mvpMatrix * vPos;
+    normView = normalize(normalMatrix * vNorm);
+    posView  = (modelView * vPos).xyz;
+    reflView = reflect(posView, normView);
+    gl_Position = mvProj * vPos;
 }
 </script>
 
 <script id="fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
 
-uniform vec3 color;
+varying vec3 posView;
+varying vec3 normView;
+varying vec3 reflView;
+
+uniform vec4 light_pos[4];
+uniform vec3 ambient_prod[4];
+uniform vec3 diffuse_prod[4];
+uniform vec3 specular_prod[4];
+uniform float shininess;
+
+uniform vec3  fog_color;
+uniform float fog_density;
+
+vec3 process_fog( vec3 fog_color, vec3 base_color, float density )
+{
+   float f = exp(-(density * density));
+   return mix(fog_color, base_color, f);
+}
 
 void main()
 {
-    gl_FragColor = vec4( color, 1.0 );
+    vec3 res_color = vec3(0);
+    vec3 N = normalize(normView);
+    vec3 R = normalize(reflView);
+    for (int i = 0; i != 4; ++i)
+    {
+        res_color += ambient_prod[i];
+        vec3 L;
+        if (light_pos[i].w == 0.0)
+            L = normalize(light_pos[i].xyz);
+        else
+            L = normalize(light_pos[i].xyz - posView);
+
+        float Kd = dot(L, N);
+        if (Kd > 0.0)
+        {
+            res_color += Kd * diffuse_prod[i];
+            float Ks = pow(max(dot(L, R), 0.0), shininess);
+            res_color += Ks * specular_prod[i];
+        }
+    }
+    gl_FragColor = vec4(process_fog(fog_color, res_color, fog_density * posView.z), 1.0);
 }
 </script>
 
@@ -78,7 +125,7 @@ void main()
             <div style="padding: 5px">
                 <table border="0">
                 <tr>
-                    <td><select size="20" id="obj-list" style="width:100px;color:white;background:#404040"></select></td>
+                    <td><select size="25" id="obj-list" style="width:100px;color:white;background:#404040"></select></td>
                     <td valign="top">
                         <div class="prim-prop" id="Sphere" hidden="hidden">
                             <table border="0">
@@ -159,24 +206,34 @@ void main()
                         <table border="0" id="obj-list-prop" hidden="hidden">
                         <tr>
                             <td>Position:</td>
-                            <td>
-                                <input id="sel-pos-x" class="spinner" value="0" step="0.1">
-                                <input id="sel-pos-y" class="spinner" value="0" step="0.1">
-                                <input id="sel-pos-z" class="spinner" value="0" step="0.1">
-                            </td>
+                            <td><input id="sel-pos-x" class="spinner" value="0" step="0.1"></td>
+                            <td><input id="sel-pos-y" class="spinner" value="0" step="0.1"></td>
+                            <td><input id="sel-pos-z" class="spinner" value="0" step="0.1"></td>
                         </tr>
                         <tr>
                             <td>Orientation:</td>
-                            <td>
-                                <input id="sel-rot-x" class="spinner" value="0" step="1" min="-360" max="360">
-                                <input id="sel-rot-y" class="spinner" value="0" step="1" min="-360" max="360">
-                                <input id="sel-rot-z" class="spinner" value="0" step="1" min="-360" max="360">
-                            </td>
+                            <td><input id="sel-rot-x" class="spinner" value="0" step="1" min="-360" max="360"></td>
+                            <td><input id="sel-rot-y" class="spinner" value="0" step="1" min="-360" max="360"></td>
+                            <td><input id="sel-rot-z" class="spinner" value="0" step="1" min="-360" max="360"></td>
                         </tr>
                         <tr>
-                            <td>Color:</td>
-                            <td><input id="sel-color" type="color" value="#0000ff"></td>
+                            <td colspan="5"><hr></td>
                         </tr>
+                        <tr>
+                            <td>Ambient:</td>
+                            <td><input id="sel-ambient" type="color" value="#0000ff"></td>
+                        </tr>
+                        <tr>
+                            <td>Diffuse:</td>
+                            <td><input id="sel-diffuse" type="color" value="#0000ff"></td>
+                        </tr>
+                        <tr>
+                            <td>Specular:</td>
+                            <td><input id="sel-specular" type="color" value="#0000ff"></td>
+                        </tr>
+                            <td>Shininess:</td>
+                            <td colspan="3">1<input id="sel-shininess" type="range" min="1" max="128" step="1" value="64"/>128</td>
+                            <td><div class="range-value"><output for="sel-shininess"></output></div></td>
                         <tr>
                             <td><input type="button" id="remove-btn" value="Remove"></td>
                         </tr>
@@ -209,7 +266,7 @@ void main()
                     <td>90</td>
                     <td><div class="range-value"><output for="pitch"></output></div></td>
                 </tr>
-                <tr><td colspan=5><hr></td></tr>
+                <tr><td colspan="5"><hr></td></tr>
                 <tr>
                     <td>FOV:</td>
                     <td align='right'>20</td>
@@ -222,15 +279,27 @@ void main()
                     <td align='right'>0.01</td>
                     <td><input id="near" type="range" min="0.01" max="1" step="0.01" value="0.1"/></td>
                     <td>1</td>
-                    <td><div class="range-value"><output for="near-clip"></output></div></td>
+                    <td><div class="range-value"><output for="near"></output></div></td>
                 </tr>
                 <tr>
                     <td>Far clip:</td>
                     <td align='right'>10</td>
                     <td><input id="far" type="range" min="10" max="50" step="1" value="20"/></td>
                     <td>50</td>
-                    <td><div class="range-value"><output for="far-clip"></output></div></td>
+                    <td><div class="range-value"><output for="far"></output></div></td>
                 </tr>
+                <tr><td colspan="5"><hr></td></tr>
+                <tr>
+                    <td>Fog color:</td>
+                    <td></td>
+                    <td><input id="fog-color" type="color" value="#404040"></td>
+                </tr>
+                <tr>
+                    <td>Fog density:</td>
+                    <td align='right'>0</td>
+                    <td><input id="fog-density" type="range" min="0" max="0.15" step="0.01" value="0.07"/></td>
+                    <td>1</td>
+                    <td><div class="range-value"><output for="fog-density"></output></div></td>
                 </table>
             </div>
             <h3>Object creation settings</h3>

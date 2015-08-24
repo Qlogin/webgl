@@ -22,6 +22,7 @@ function Primitive(t) {
         },
 
         vBuffer    : gl.createBuffer(),
+        nBuffer    : gl.createBuffer(),
         triBuffer  : gl.createBuffer(),
         lineBuffer : gl.createBuffer(),
 
@@ -29,6 +30,10 @@ function Primitive(t) {
             var points = this.get_points();
             gl.bindBuffer( gl.ARRAY_BUFFER, this.vBuffer );
             gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.DYNAMIC_DRAW );
+
+            var normals = this.get_normals();
+            gl.bindBuffer( gl.ARRAY_BUFFER, this.nBuffer );
+            gl.bufferData( gl.ARRAY_BUFFER, flatten(normals), gl.DYNAMIC_DRAW );
 
             if (this.has_tris) {
                 var tris = this.get_triangles();
@@ -68,6 +73,23 @@ function Sphere(r, hnum, vnum)
             }
         }
         return points;
+    };
+
+    sphere.get_normals = function() {
+        var i, j;
+        var normals = [];
+        for (i = 0; i <= this.vnum; ++i)
+        {
+            var p = Math.PI / 2 - Math.PI * i / this.vnum;
+            for (j = 0; j != this.hnum; ++j)
+            {
+                var c = 2 * Math.PI * j / this.hnum;
+                normals.push(vec3(Math.cos(p) * Math.cos(c),
+                                  Math.cos(p) * Math.sin(c),
+                                  Math.sin(p)));
+            }
+        }
+        return normals;
     };
 
     sphere.get_triangles = function() {
@@ -116,58 +138,78 @@ function Cylinder(r, h, hnum)
         for (i = 0; i != this.hnum; ++i)
         {
            var c = 2 * Math.PI * i / this.hnum;
-           points.push(vec3(this.r * Math.cos(c), this.r * Math.sin(c), this.h/2));
-           points.push(vec3(this.r * Math.cos(c), this.r * Math.sin(c), -this.h/2));
+           var x = this.r * Math.cos(c);
+           var y = this.r * Math.sin(c);
+           points.push(vec3(x, y,  this.h/2));
+           points.push(vec3(x, y, -this.h/2));
+           points.push(vec3(x, y,  this.h/2));
+           points.push(vec3(x, y, -this.h/2));
         }
         points.push(vec3(0, 0, this.h/2));
         points.push(vec3(0, 0, -this.h/2));
         return points;
     }
 
+    cylinder.get_normals = function() {
+        var normals = [];
+        var i;
+        for (i = 0; i != this.hnum; ++i)
+        {
+           var c = 2 * Math.PI * i / this.hnum;
+           normals.push(vec3(Math.cos(c), Math.sin(c), 0));
+           normals.push(vec3(Math.cos(c), Math.sin(c), 0));
+           normals.push(vec3(0, 0, 1));
+           normals.push(vec3(0, 0, -1));
+        }
+        normals.push(vec3(0, 0, 1));
+        normals.push(vec3(0, 0, -1));
+        return normals;
+    }
+
     cylinder.get_triangles = function() {
         var indices = [];
-        var vcap = 2 * this.hnum;
+        var vcap = 4 * this.hnum;
         var i;
         for (i = 0; i != this.hnum; ++i)
         {
             // Side
-            indices.push(2 * i);
-            indices.push(2 * ((i + 1) % this.hnum));
-            indices.push(2 * ((i + 1) % this.hnum) + 1);
-            indices.push(2 * ((i + 1) % this.hnum) + 1);
-            indices.push(2 * i + 1);
-            indices.push(2 * i);
+            indices.push(4 * i);
+            indices.push(4 * ((i + 1) % this.hnum));
+            indices.push(4 * ((i + 1) % this.hnum) + 1);
+            indices.push(4 * ((i + 1) % this.hnum) + 1);
+            indices.push(4 * i + 1);
+            indices.push(4 * i);
 
             // Cap
             indices.push(vcap);
-            indices.push(2 * i);
-            indices.push(2 * ((i + 1) % this.hnum));
+            indices.push(4 * i + 2);
+            indices.push(4 * ((i + 1) % this.hnum) + 2);
             indices.push(vcap + 1);
-            indices.push(2 * i + 1);
-            indices.push(2 * ((i + 1) % this.hnum) + 1);
+            indices.push(4 * i + 3);
+            indices.push(4 * ((i + 1) % this.hnum) + 3);
         }
         return indices;
     };
 
     cylinder.get_lines = function() {
         var indices = [];
-        var vcap = 2 * this.hnum;
+        var vcap = 4 * this.hnum;
         var i;
         for (i = 0; i != this.hnum; ++i)
         {
             // Side
-            indices.push(2 * ((i + 1) % this.hnum));
-            indices.push(2 * i);
-            indices.push(2 * i);
-            indices.push(2 * i + 1);
-            indices.push(2 * i + 1);
-            indices.push(2 * ((i + 1) % this.hnum) + 1);
+            indices.push(4 * ((i + 1) % this.hnum));
+            indices.push(4 * i);
+            indices.push(4 * i);
+            indices.push(4 * i + 1);
+            indices.push(4 * i + 1);
+            indices.push(4 * ((i + 1) % this.hnum) + 1);
 
             // Cap
             indices.push(vcap);
-            indices.push(2 * i);
+            indices.push(4 * i);
             indices.push(vcap + 1);
-            indices.push(2 * i + 1);
+            indices.push(4 * i + 1);
         }
         return indices;
     };
@@ -189,11 +231,33 @@ function Cone(r, h, hnum)
         {
            var c = 2 * Math.PI * i / this.hnum;
            points.push(vec3(this.r * Math.cos(c), this.r * Math.sin(c), 0));
+           points.push(vec3(0, 0, this.h));
         }
-        points.push(vec3(0, 0, this.h));
+        for (i = 0; i != this.hnum; ++i)
+        {
+           var c = 2 * Math.PI * i / this.hnum;
+           points.push(vec3(this.r * Math.cos(c), this.r * Math.sin(c), 0));
+        }
         points.push(vec3(0, 0, 0));
         return points;
-    }
+    };
+
+    cone.get_normals = function() {
+        var normals = [];
+        var i;
+        for (i = 0; i != this.hnum; i += 0.5)
+        {
+           var c = 2 * Math.PI * i / this.hnum;
+           var x = this.r * Math.cos(c);
+           var y = this.r * Math.sin(c);
+           var n = normalize(cross(vec3(-y, x, 0), vec3(-x, -y, this.h)));
+           normals.push(n);
+        }
+        for (i = 0; i != this.hnum; ++i)
+            normals.push(vec3(0, 0, -1));
+        normals.push(vec3(0, 0, -1));
+        return normals;
+    };
 
     cone.get_triangles = function() {
         var indices = [];
@@ -201,14 +265,14 @@ function Cone(r, h, hnum)
         for (i = 0; i != this.hnum; ++i)
         {
             // Side
-            indices.push(this.hnum);
-            indices.push(i);
-            indices.push((i + 1) % this.hnum);
+            indices.push(2 * i);
+            indices.push(2 * i + 1);
+            indices.push(2 * ((i + 1) % this.hnum));
 
             // Cap
-            indices.push(this.hnum + 1);
-            indices.push(i);
-            indices.push((i + 1) % this.hnum);
+            indices.push(3 * this.hnum);
+            indices.push(2 * this.hnum + i);
+            indices.push(2 * this.hnum + (i + 1) % this.hnum);
         }
         return indices;
     };
@@ -218,12 +282,12 @@ function Cone(r, h, hnum)
         var i;
         for (i = 0; i != this.hnum; ++i)
         {
-            indices.push(i);
-            indices.push(this.hnum);
-            indices.push(i);
-            indices.push(this.hnum + 1);
-            indices.push(i);
-            indices.push((i + 1) % this.hnum);
+            indices.push(2 * i);
+            indices.push(2 * i + 1);
+            indices.push(2 * i);
+            indices.push(2 * ((i + 1) % this.hnum));
+            indices.push(2 * this.hnum + i);
+            indices.push(3 * this.hnum);
         }
         return indices;
     };
