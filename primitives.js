@@ -99,10 +99,10 @@ function Sphere(r, hnum, vnum)
             for (j = 0; j != this.hnum; ++j)
             {
                indices.push(i * this.hnum + j);
+               indices.push((i + 1) * this.hnum + (j + 1) % this.hnum);
                indices.push(i * this.hnum + (j + 1) % this.hnum);
-               indices.push((i + 1) * this.hnum + (j + 1) % this.hnum);
-               indices.push((i + 1) * this.hnum + (j + 1) % this.hnum);
                indices.push((i + 1) * this.hnum + j);
+               indices.push((i + 1) * this.hnum + (j + 1) % this.hnum);
                indices.push(i * this.hnum + j);
             }
         return indices;
@@ -174,19 +174,19 @@ function Cylinder(r, h, hnum)
         {
             // Side
             indices.push(4 * i);
+            indices.push(4 * ((i + 1) % this.hnum) + 1);
             indices.push(4 * ((i + 1) % this.hnum));
-            indices.push(4 * ((i + 1) % this.hnum) + 1);
-            indices.push(4 * ((i + 1) % this.hnum) + 1);
             indices.push(4 * i + 1);
+            indices.push(4 * ((i + 1) % this.hnum) + 1);
             indices.push(4 * i);
 
             // Cap
             indices.push(vcap);
             indices.push(4 * i + 2);
             indices.push(4 * ((i + 1) % this.hnum) + 2);
-            indices.push(vcap + 1);
-            indices.push(4 * i + 3);
             indices.push(4 * ((i + 1) % this.hnum) + 3);
+            indices.push(4 * i + 3);
+            indices.push(vcap + 1);
         }
         return indices;
     };
@@ -266,13 +266,13 @@ function Cone(r, h, hnum)
         {
             // Side
             indices.push(2 * i);
-            indices.push(2 * i + 1);
             indices.push(2 * ((i + 1) % this.hnum));
+            indices.push(2 * i + 1);
 
             // Cap
             indices.push(3 * this.hnum);
-            indices.push(2 * this.hnum + i);
             indices.push(2 * this.hnum + (i + 1) % this.hnum);
+            indices.push(2 * this.hnum + i);
         }
         return indices;
     };
@@ -293,4 +293,67 @@ function Cone(r, h, hnum)
     };
     cone.update_buffers();
     return cone;
+}
+
+function Cube(sx, sy, sz)
+{
+    var cube = Primitive("Cube");
+    cube.sx = sx;
+    cube.sy = sy;
+    cube.sz = sz;
+
+    cube.get_points = function() {
+        var points = [];
+        for (var i = -1; i < 2; i += 2)
+            for (var j = -1; j < 2; j += 2)
+                for (var k = -1; k < 2; k += 2)
+                {
+                    var p = [i * this.sx / 2, j * this.sy / 2, k * this.sz / 2];
+                    points.push(p);
+                    points.push(p);
+                    points.push(p);
+                }
+        return points;
+    };
+
+    cube.get_normals = function() {
+        var normals = [];
+        for (var i = -1; i < 2; i += 2)
+            for (var j = -1; j < 2; j += 2)
+                for (var k = -1; k < 2; k += 2)
+                {
+                    normals.push([i, 0, 0]);
+                    normals.push([0, j, 0]);
+                    normals.push([0, 0, k]);
+                }
+        return normals;
+    };
+
+    cube.get_triangles = function() {
+        var indices = [];
+        function put_index(axe, i, j, k) {
+            var vals = [0, 0, 0];
+            vals[axe] = i;
+            vals[(axe + 1) % 3] = j;
+            vals[(axe + 2) % 3] = k;
+            indices.push(3 * (4 * vals[0] + 2 * vals[1] + vals[2]) + axe);
+        }
+
+        for (var axe = 0; axe < 3; ++axe)
+            for (var val = 0; val < 2; ++val)
+            {
+                put_index(axe, val,  0, 0);
+                put_index(axe, val,  1, 1 - val);
+                put_index(axe, val,  1, val);
+                put_index(axe, val,  val, 1);
+                put_index(axe, val,  1 - val, 1);
+                put_index(axe, val,  0, 0);
+            }
+
+        return indices;
+    };
+
+    cube.has_lines = false;
+    cube.update_buffers();
+    return cube;
 }

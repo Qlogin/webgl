@@ -82,7 +82,9 @@ window.onload = function init()
                   camera.fog_color[1],
                   camera.fog_color[2], 1.0);
     gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
     gl.enable(gl.POLYGON_OFFSET_FILL);
+    gl.cullFace(gl.BACK);
     gl.polygonOffset(1.0, 0.0);
 
     //  Load shaders and initialize attribute buffers
@@ -127,6 +129,9 @@ window.onload = function init()
 
     $('#fog-color').bind('change', function(event) {
         camera.fog_color = hexToRGB(event.target.value);
+        gl.clearColor(camera.fog_color[0],
+                      camera.fog_color[1],
+                      camera.fog_color[2], 1.0);
         render();
     });
 
@@ -269,6 +274,15 @@ window.onload = function init()
             render();
         });
 
+    $('#sel-cube-sizex, #sel-cube-sizey, #sel-cube-sizez')
+        .bind('input', function() {
+            objects[sel_id].sx    = $('#sel-cube-sizex')[0].valueAsNumber;
+            objects[sel_id].sy    = $('#sel-cube-sizey')[0].valueAsNumber;
+            objects[sel_id].sz    = $('#sel-cube-sizez')[0].valueAsNumber;
+            objects[sel_id].update_buffers();
+            render();
+        });
+
     $('#sel-pos-x, #sel-pos-y, #sel-pos-z').bind('spin spinchange', function() {
         objects[sel_id].pos = vec3($('#sel-pos-x').spinner("value"),
                                    $('#sel-pos-y').spinner("value"),
@@ -286,9 +300,9 @@ window.onload = function init()
     });
 
     addObject(Sphere(1, 20, 18), [0, 0, 1], [0, 0, 0], [1, 0, 0]);
-    addObject(Cylinder(0.5, 2, 15), [1.5, -1.5, 0.5], [0, -30, 0], [0, 1, 0]);
+    addObject(Cylinder(0.5, 2, 15), [1.5, -1.5, 0.9], [0, -30, 0], [0, 1, 0]);
     addObject(Cone(1, 2, 16), [-5, -8, 0], [0, 0, 0], [0, 0, 1]);
-
+    addObject(Cube(20, 20, 0.4), [0, 0, -0.2], [0, 0, 0], [0.5, 0.8, 0.5]);
     render();
 };
 
@@ -309,6 +323,11 @@ function createObject(type, position)
        prim = Cone($('#cone-radius')[0].valueAsNumber,
                    $('#cone-height')[0].valueAsNumber,
                    $('#cone-subdiv')[0].valueAsNumber);
+    }
+    else if (type == "Cube") {
+        prim = Cube($('#cube-sizex')[0].valueAsNumber,
+                    $('#cube-sizey')[0].valueAsNumber,
+                    $('#cube-sizez')[0].valueAsNumber);
     }
     else {
         return;
@@ -343,28 +362,31 @@ function on_select()
     $('.prim-prop').attr('hidden', 'hidden');
     $('.prim-prop#' + obj.type).removeAttr('hidden');
 
-    if (obj.type == "Sphere")
-    {
+    if (obj.type == "Sphere") {
         $('#sel-sphere-radius').val(obj.r);
         $('#sel-sphere-hor-subdiv').val(obj.hnum);
         $('#sel-sphere-vert-subdiv').val(obj.vnum);
     }
-    else if (obj.type == "Cylinder")
-    {
+    else if (obj.type == "Cylinder") {
         $('#sel-cylinder-radius').val(obj.r);
         $('#sel-cylinder-height').val(obj.h);
         $('#sel-cylinder-subdiv').val(obj.hnum);
     }
-    else if (obj.type == "Cone")
-    {
+    else if (obj.type == "Cone") {
         $('#sel-cone-radius').val(obj.r);
         $('#sel-cone-height').val(obj.h);
         $('#sel-cone-subdiv').val(obj.hnum);
+    }
+    else if (obj.type == "Cube") {
+        $('#sel-cube-sizex').val(obj.sx);
+        $('#sel-cube-sizey').val(obj.sy);
+        $('#sel-cube-sizez').val(obj.sz);
     }
 
     $('#sel-ambient').val(rgbToHex(obj.ambient[0]  , obj.ambient[1] , obj.ambient[2]));
     $('#sel-diffuse').val(rgbToHex(obj.diffuse[0]  , obj.diffuse[1] , obj.diffuse[2]));
     $('#sel-specular').val(rgbToHex(obj.specular[0], obj.specular[1], obj.specular[2]));
+    $('#sel-shininess').val(obj.shininess);
 
     $('#sel-pos-x').val(obj.pos[0]);
     $('#sel-pos-y').val(obj.pos[1]);

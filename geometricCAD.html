@@ -202,6 +202,31 @@ void main()
                             </tr>
                             </table>
                         </div>
+                        <div class="prim-prop" id="Cube" hidden="hidden">
+                            <table border="0">
+                            <tr>
+                                <td>Size X:</td>
+                                <td align='right'>0.1</td>
+                                <td><input id="sel-cube-sizex" type="range" min="0.1" max="10" step="0.1" value="1"/></td>
+                                <td>10</td>
+                                <td><div class="range-value"><output for="sel-cube-sizex"></output></div></td>
+                            </tr>
+                            <tr>
+                                <td>Size Y:</td>
+                                <td align='right'>0.1</td>
+                                <td><input id="sel-cube-sizey" type="range" min="0.1" max="10" step="0.1" value="1"/></td>
+                                <td>10</td>
+                                <td><div class="range-value"><output for="sel-cube-sizey"></output></div></td>
+                            </tr>
+                            <tr>
+                                <td>Size Z:</td>
+                                <td align='right'>0.1</td>
+                                <td><input id="sel-cube-sizez" type="range" min="0.1" max="10" step="0.1" value="1"/></td>
+                                <td>10</td>
+                                <td><div class="range-value"><output for="sel-cube-sizez"></output></div></td>
+                            </tr>
+                            </table>
+                        </div>
                         <hr>
                         <table border="0" id="obj-list-prop" hidden="hidden">
                         <tr>
@@ -232,7 +257,7 @@ void main()
                             <td><input id="sel-specular" type="color" value="#0000ff"></td>
                         </tr>
                             <td>Shininess:</td>
-                            <td colspan="3">1<input id="sel-shininess" type="range" min="1" max="128" step="1" value="64"/>128</td>
+                            <td colspan="3">1<input id="sel-shininess" type="range" min="1" max="256" step="1" value="64"/>256</td>
                             <td><div class="range-value"><output for="sel-shininess"></output></div></td>
                         <tr>
                             <td><input type="button" id="remove-btn" value="Remove"></td>
@@ -255,7 +280,7 @@ void main()
                 <tr>
                     <td>Course:</td>
                     <td align='right'>-180</td>
-                    <td><input id="course" type="range" min="-180" max="180" step="1" value="0"/></td>
+                    <td><input id="course" type="range" min="-180" max="180" step="1" value="60"/></td>
                     <td>180</td>
                     <td><div class="range-value"><output for="course"></output></div></td>
                 </tr>
@@ -284,7 +309,7 @@ void main()
                 <tr>
                     <td>Far clip:</td>
                     <td align='right'>10</td>
-                    <td><input id="far" type="range" min="10" max="50" step="1" value="20"/></td>
+                    <td><input id="far" type="range" min="10" max="50" step="1" value="30"/></td>
                     <td>50</td>
                     <td><div class="range-value"><output for="far"></output></div></td>
                 </tr>
@@ -309,6 +334,7 @@ void main()
                         <li><a href="#sphere-tab">Sphere</a></li>
                         <li><a href="#cylinder-tab">Cylinder</a></li>
                         <li><a href="#cone-tab">Cone</a></li>
+                        <li><a href="#cube-tab">Cube</a></li>
                     </ul>
                     <div id="sphere-tab">
                         <table border="0">
@@ -385,6 +411,31 @@ void main()
                         </tr>
                         </table>
                     </div>
+                    <div id="cube-tab">
+                        <table border="0">
+                            <tr>
+                                <td>Size X:</td>
+                                <td align='right'>0.1</td>
+                                <td><input id="cube-sizex" type="range" min="0.1" max="10" step="0.1" value="1"/></td>
+                                <td>10</td>
+                                <td><div class="range-value"><output for="cube-sizex"></output></div></td>
+                            </tr>
+                            <tr>
+                                <td>Size Y:</td>
+                                <td align='right'>0.1</td>
+                                <td><input id="cube-sizey" type="range" min="0.1" max="10" step="0.1" value="1"/></td>
+                                <td>10</td>
+                                <td><div class="range-value"><output for="cube-sizey"></output></div></td>
+                            </tr>
+                            <tr>
+                                <td>Size Z:</td>
+                                <td align='right'>0.1</td>
+                                <td><input id="cube-sizez" type="range" min="0.1" max="10" step="0.1" value="1"/></td>
+                                <td>10</td>
+                                <td><div class="range-value"><output for="cube-sizez"></output></div></td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
                 <table border="0">
                 <tr>
@@ -406,6 +457,7 @@ void main()
                     <input type="button" class="create-btn" id="sphere-btn" value="Sphere">
                     <input type="button" class="create-btn" id="cylinder-btn" value="Cylinder">
                     <input type="button" class="create-btn" id="cone-btn" value="Cone">
+                    <input type="button" class="create-btn" id="cube-btn" value="Cube">
                 </fieldset>
             </form>
         </div>
