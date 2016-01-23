@@ -353,7 +353,26 @@ function Cube(sx, sy, sz)
         return indices;
     };
 
-    cube.has_lines = false;
+    cube.get_lines = function() {
+        var indices = [];
+        function put_index(i, j, k) {
+            indices.push(3 * (4 * i + 2 * j + k));
+        }
+        function put_corner(i, j, k) {
+            put_index(i, j, k);
+            put_index(1 - i, j, k);
+            put_index(i, j, k);
+            put_index(i, 1 - j, k);
+            put_index(i, j, k);
+            put_index(i, j, 1 - k);
+        }
+        put_corner(0, 0, 0);
+        put_corner(1, 1, 0);
+        put_corner(1, 0, 1);
+        put_corner(0, 1, 1);
+        return indices;
+    };
+
     cube.update_buffers();
     return cube;
 }

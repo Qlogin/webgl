@@ -2,9 +2,34 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-<title>Assignment 3. Geometric CAD</title>
+<title>Assignment 4. CAD + Lighting</title>
 
-<script id="vertex-shader" type="x-shader/x-vertex">
+<script id="simple-vertex" type="x-shader/x-vertex">
+attribute vec4 vPos;
+uniform mat4 mvProj;
+
+void main()
+{
+    gl_Position = mvProj * vPos;
+}
+</script>
+
+<script id="simple-fragment" type="x-shader/x-fragment">
+precision mediump float;
+
+uniform vec3 color;
+
+void main()
+{
+    gl_FragColor = vec4(color, 1.0);
+}
+</script>
+
+<!-- Note: instead of light vector reflection I reflect view vector
+     using standard (ES 2.0) glsl 'reflect' function
+     It is valid because: reflLight * view = light * reflView
+-->
+<script id="light-vertex" type="x-shader/x-vertex">
 attribute vec4 vPos;
 attribute vec3 vNorm;
 
@@ -20,12 +45,12 @@ void main()
 {
     normView = normalize(normalMatrix * vNorm);
     posView  = (modelView * vPos).xyz;
-    reflView = reflect(posView, normView);
+    reflView = reflect(posView, normView); // See note above
     gl_Position = mvProj * vPos;
 }
 </script>
 
-<script id="fragment-shader" type="x-shader/x-fragment">
+<script id="light-fragment" type="x-shader/x-fragment">
 precision mediump float;
 
 varying vec3 posView;
@@ -36,7 +61,10 @@ uniform vec4 light_pos[4];
 uniform vec3 ambient_prod[4];
 uniform vec3 diffuse_prod[4];
 uniform vec3 specular_prod[4];
+uniform bool enabled[4];
 uniform float shininess;
+uniform vec2 attenuation; // Common parameters for all point lights.
+                          // TODO: make own attenuation for each light
 
 uniform vec3  fog_color;
 uniform float fog_density;
@@ -54,20 +82,26 @@ void main()
     vec3 R = normalize(reflView);
     for (int i = 0; i != 4; ++i)
     {
-        res_color += ambient_prod[i];
+        vec3 light_color = ambient_prod[i];
         vec3 L;
+        float katt = 1.0;
         if (light_pos[i].w == 0.0)
             L = normalize(light_pos[i].xyz);
         else
+        {
             L = normalize(light_pos[i].xyz - posView);
+            float d = distance(light_pos[i].xyz, posView);
+            katt = 1.0 / (1.0 + d * (attenuation.x + d * attenuation.y));
+        }
 
         float Kd = dot(L, N);
         if (Kd > 0.0)
         {
-            res_color += Kd * diffuse_prod[i];
+            light_color += Kd * diffuse_prod[i];
             float Ks = pow(max(dot(L, R), 0.0), shininess);
-            res_color += Ks * specular_prod[i];
+            light_color += Ks * specular_prod[i];
         }
+        res_color += katt * light_color;
     }
     gl_FragColor = vec4(process_fog(fog_color, res_color, fog_density * posView.z), 1.0);
 }
@@ -110,7 +144,7 @@ void main()
 <body bgcolor="#101010">
 <div style="width:1260px">
     <div class="ui-widget-header" style="padding-left:20px">
-        <h1>Assignment 3. Geometric CAD</h1>
+        <h1>Assignment 4. CAD + Lighting</h1>
     </div>
     <div style="height:600px;width:800px;float:left">
         <center>
@@ -267,6 +301,100 @@ void main()
                 </tr>
                 </table>
             </div>
+            <h3>Lights</h3>
+            <div style="padding: 5px">
+                <table border="0">
+                <tr>
+                    <td><u>Light #1</u></td>
+                    <td colspan="2">from Camera</td>
+                </tr>
+                <tr>
+                    <td><input class="light-enable" type="checkbox" checked="checked" name="1"></td>
+                    <td>Ambient:</td>
+                    <td><input class="light-ambient" type="color" value="#000000" name="1"></td>
+                    <td>Diffuse:</td>
+                    <td><input class="light-diffuse" type="color" value="#808080" name="1"></td>
+                    <td>Specular:</td>
+                    <td><input class="light-specular" type="color" value="#808080" name="1"></td>
+                </tr>
+                <tr>
+                    <td colspan="7"><hr></td>
+                </tr>
+                <tr>
+                    <td><u>Light #2</u></td>
+                    <td colspan="7">distant light (Sun)</td>
+                </tr>
+                <tr>
+                    <td><input class="light-enable" type="checkbox" checked="checked" name="2"></td>
+                    <td>Ambient:</td>
+                    <td><input class="light-ambient" type="color" value="#000000" name="2"></td>
+                    <td>Diffuse:</td>
+                    <td><input class="light-diffuse" type="color" value="#808000" name="2"></td>
+                    <td>Specular:</td>
+                    <td><input class="light-specular" type="color" value="#808000" name="2"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Course:</td>
+                    <td colspan="5">-180<input id="light2-course" type="range" min="-180" max="180" step="1" value="-135"/>180</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Pitch:</td>
+                    <td colspan="5">0<input id="light2-pitch" type="range" min="0" max="90" step="1" value="45"/>90</td>
+                </tr>
+                <tr>
+                    <td colspan="7"><hr></td>
+                </tr>
+                <tr>
+                    <td><u>Light #3</u></td>
+                    <td colspan="2">point light</td>
+                </tr>
+                <tr>
+                    <td><input class="light-enable" type="checkbox" checked="checked" name="3"></td>
+                    <td>Ambient:</td>
+                    <td><input class="light-ambient" type="color" value="#000000" name="3"></td>
+                    <td>Diffuse:</td>
+                    <td><input class="light-diffuse" type="color" value="#800000" name="3"></td>
+                    <td>Specular:</td>
+                    <td><input class="light-specular" type="color" value="#800000" name="3"></td>
+                </tr>
+                <tr>
+                    <td colspan="7"><hr></td>
+                </tr>
+                <tr>
+                    <td><u>Light #4</u></td>
+                    <td colspan="2">point light</td>
+                </tr>
+                <tr>
+                    <td><input class="light-enable" type="checkbox" checked="checked" name="4"></td>
+                    <td>Ambient:</td>
+                    <td><input class="light-ambient" type="color" value="#000000" name="4"></td>
+                    <td>Diffuse:</td>
+                    <td><input class="light-diffuse" type="color" value="#000080" name="4"></td>
+                    <td>Specular:</td>
+                    <td><input class="light-specular" type="color" value="#000080" name="4"></td>
+                </tr>
+                <tr><td colspan="7"><hr></td></tr>
+                <tr>
+                    <td>Attenuation:</td>
+                    <td>Linear</td>
+                    <td><input id="linear-att" class="spinner" value="0.1" step="0.01" min="0" max="1"></td>
+                    <td>Quadr.</td>
+                    <td><input id="quadr-att" class="spinner" value="0.01" step="0.01" min="0" max="1"></td>
+                </tr>
+                <tr>
+                    <td>Fog color:</td>
+                    <td></td>
+                    <td><input id="fog-color" type="color" value="#404040"></td>
+                </tr>
+                <tr>
+                    <td>Fog density:</td>
+                    <td></td>
+                    <td colspan="6">0<input id="fog-density" type="range" min="0" max="0.15" step="0.01" value="0.07"/>1</td>
+                </tr>
+                </table>
+            </div>
             <h3>Camera settings</h3>
             <div style="padding: 5px">
                 <table border="0">
@@ -309,25 +437,13 @@ void main()
                 <tr>
                     <td>Far clip:</td>
                     <td align='right'>10</td>
-                    <td><input id="far" type="range" min="10" max="50" step="1" value="30"/></td>
+                    <td><input id="far" type="range" min="10" max="50" step="1" value="40"/></td>
                     <td>50</td>
                     <td><div class="range-value"><output for="far"></output></div></td>
                 </tr>
-                <tr><td colspan="5"><hr></td></tr>
-                <tr>
-                    <td>Fog color:</td>
-                    <td></td>
-                    <td><input id="fog-color" type="color" value="#404040"></td>
-                </tr>
-                <tr>
-                    <td>Fog density:</td>
-                    <td align='right'>0</td>
-                    <td><input id="fog-density" type="range" min="0" max="0.15" step="0.01" value="0.07"/></td>
-                    <td>1</td>
-                    <td><div class="range-value"><output for="fog-density"></output></div></td>
                 </table>
             </div>
-            <h3>Object creation settings</h3>
+            <h3>Default creation settings</h3>
             <div style="padding: 5px">
                 <div id="primitive-tabs">
                     <ul>
