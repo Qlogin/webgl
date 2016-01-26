@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="WebGL">
+    <meta name="author" content="Qlogin">
+    <title>Qlogin WebGL Examples</title>
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+  </head>
+  <body>
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#"><font color="red">Q</font>login WebGL</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Examples <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li class="dropdown-header">Coursera assignments</li>
+                <li><a href="index_1.html">#1 Tessellation and Twist</a></li>
+                <li><a href="index_2.html">#2 Mouse painting</a></li>
+                <li><a href="#">#3 Geometric CAD</a></li>
+                <li><a href="index_4.html">#4 CAD with Lighting</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Complex Demos</li>
+                <li><a href="#">Demo 1</a></li>
+                <li><a href="#">Demo 2</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-xs-12 col-md-offset-1 col-md-7">
+          <!-- Main jumbotron for a primary marketing message or call to action -->
+          <h1>WebGL Examples and Demos!</h1>
+          <p>Here you can find example and demos of three-dimensional interactive applications that used WebGL.
+             These applications are independent of the particular platform and can be run like any other Web application
+             within the latest web browsers.
+             Enjoy 3D Computer Graphics developed in JavaScript!
+          </p>
+          <div class="row">
+            <div class="col-sm-12 col-md-6 col-lg-4">
+              <h2>1. Tessellation and Twist</h2>
+              <p>First program allow you to demonstrate twist and tessellation. User can enter both the number of subdivisions and the angle.
+                 You can test the difference between rotation in the application versus doing the same operation in the vertex shader.</p>
+              <p><a class="btn btn-default" href="index_1.html" role="button">View details &raquo;</a></p>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-4">
+              <h2>2. Painting with the mouse</h2>
+              <p>This application will let you created what look like curves by connecting a series of vertices with line segments. 
+                 The vertices are generating through the mouse move event while a mouse button is depressed. 
+                 A new curve is started each time the mouse button is depressed. User can change the drawing color and line width.</p>
+              <p><a class="btn btn-default" href="index_2.html" role="button">View details &raquo;</a></p>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-4">
+              <h2>3. Geometric CAD</h2>
+              <p>CAD-like application that gives you some experience with transformations, 3D-objects and interaction.
+                 A simple modeling program that lets the user populate the canvas with spheres, cones, and cylinders. 
+                 All the information - choice of an object, its size, its location and its orientation - is entered interactively.</p>
+              <p><button class="btn btn-default" disabled="disabled">View details &raquo;</button></p>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-4">
+              <h2>4. CAD with Lighting</h2>
+              <p>This is an extension of the previous example. Here we get a more realistic image by using lighting.
+                 User can assign material properties to objects and can control light sources.</p>
+              <p><a class="btn btn-default" href="index_4.html" role="button">View details &raquo;</a></p>
+            </div>
+          </div>
+          <hr>
+              <footer>
+                <p>Copyright &copy; 2015 Roman Qlogin</p>
+              </footer>
+        </div>
+        <div class="col-xs-4 col-md-2 col-md-offset-1">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h6 class="panel-title">Demos Source Code</h6>
+            </div>
+            <div class="panel-body">
+              <a class="btn btn-success btn-block" href="https://github.com/Qlogin/webgl" role="button">
+                <img src="images/octocat-icon.png" height="20">&nbsp;View on GitHub
+              </a>
+              <a class="btn btn-success btn-block" href="https://github.com/Qlogin/webgl/zipball/master" role="button">
+                <img src="images/download-icon.png" height="20">&nbsp;Download .zip
+              </a>
+              <a class="btn btn-success btn-block" href="https://github.com/Qlogin/webgl/tarball/master" role="button">
+                <img src="images/download-icon.png" height="20">&nbsp;Download .tag.gz
+              </a>
+            </div>
+            <div class="panel-footer footer-text">
+              Maintained by <a href="https://github.com/Qlogin">Qlogin</a>.<br>
+              Hosted by <a href="https://pages.github.com/">GitHub Pages</a>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+  </body>
+</html>

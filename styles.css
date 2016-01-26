@@ -1,0 +1,36 @@
+body {
+  padding-top: 70px;
+}
+
+.demo-frame-1 {
+  position: relative;
+  width: 100%;
+  max-width: 850px;
+  height: 650px;
+}
+
+.demo-frame-4 {
+  position: relative;
+  width: 100%;
+  max-width: 1280px;
+  height: 760px;
+}
+
+.top-right {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+}
+
+.footer-text {
+  font-size: 13px;
+  color: #aaa;
+}
+
+.footer-text a {
+  color: #666;
+}
+
+.footer-text a:hover {
+  color: #444;
+}
