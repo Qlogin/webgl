@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>Assignment 3. Geometric CAD</title>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPos;
+
+uniform mat4 mvMatrix;
+uniform mat4 projMatrix;
+
+void main()
+{
+    gl_Position = projMatrix * mvMatrix * vPos;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+
+uniform vec3 color;
+
+void main()
+{
+    gl_FragColor = vec4( color, 1.0 );
+}
+</script>
+
+<link href="http://code.jquery.com/ui/1.10.4/themes/sunny/jquery-ui.css" rel="stylesheet">
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+
+<script type="text/javascript" src="common/webgl-utils.js"></script>
+<script type="text/javascript" src="common/initShaders.js"></script>
+<script type="text/javascript" src="common/MV.js"></script>
+<script type="text/javascript" src="geometricCAD_3.js"></script>
+
+<script>
+    $(function() {
+        $( "#accordion-params" ).accordion({heightStyle: "content"});
+        $( "#primitive-tabs" ).tabs();
+        $( "#create-btn" ).button();
+    });
+</script>
+</head>
+
+<body>
+<div style="width:1200px">
+  <div class="ui-widget-header">
+      <h1>Assignment 3. Geometric CAD</h1>
+  </div>
+  <div style="background-color:#e9dcc9;height:600px;width:800px;float:left">
+    <center>
+      <canvas id="gl-canvas" width="800" height="600">
+        Oops ... your browser doesn't support the HTML5 canvas element
+      </canvas>
+    </center>
+  </div>
+  <div id="accordion-params"
+       style="background:#fff7e0;font-size:12px;height:600px;width:400px;float:right;">
+    <h3>Create primitive</h3>
+    <div style="padding: 5px">
+      <div id="primitive-tabs">
+        <ul>
+          <li><a href="#sphere-tab">Sphere</a></li>
+          <li><a href="#cylinder-tab">Cylinder</a></li>
+          <li><a href="#cone-tab">Cone</a></li>
+        </ul>
+        <div id="sphere-tab">
+          <table border="0">
+          <tr>
+            <td>Radius:</td>
+            <td align='right'>0.1</td>
+            <td><input id="sphere-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
+            <td>5</td>
+          </tr>
+          <tr>
+            <td>Hor.subdivision:</td>
+            <td align='right'>6</td>
+            <td><input id="sphere-hor-subdiv" type="range" min="6" max="30" step="1" value="16"/></td>
+            <td>30</td>
+          </tr>
+          <tr>
+            <td>Vert.subdivision:</td>
+            <td align='right'>6</td>
+            <td><input id="sphere-vert-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
+            <td>30</td>
+          </tr>
+          </table>
+        </div>
+        <div id="cylinder-tab">
+          <table border="0">
+          <tr>
+            <td>Radius:</td>
+            <td align='right'>0.1</td>
+            <td><input id="cylinder-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
+            <td>5</td>
+          </tr>
+          <tr>
+            <td>Height:</td>
+            <td align='right'>0.1</td>
+            <td><input id="cylinder-height" type="range" min="0.1" max="10" step="0.1" value="2"/></td>
+            <td>10</td>
+          </tr>
+          <tr>
+            <td>Subdivision:</td>
+            <td align='right'>6</td>
+            <td><input id="cylinder-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
+            <td>30</td>
+          </tr>
+          </table>
+        </div>
+        <div id="cone-tab">
+          <table border="0">
+          <tr>
+            <td>Radius:</td>
+            <td align='right'>0.1</td>
+            <td><input id="cone-radius" type="range" min="0.1" max="5" step="0.1" value="1"/></td>
+            <td>5</td>
+          </tr>
+          <tr>
+            <td>Height:</td>
+            <td align='right'>0.1</td>
+            <td><input id="cone-height" type="range" min="0.1" max="10" step="0.1" value="2"/></td>
+            <td>10</td>
+          </tr>
+          <tr>
+            <td>Subdivision:</td>
+            <td align='right'>6</td>
+            <td><input id="cone-subdiv" type="range" min="6" max="30" step="1" value="12"/></td>
+            <td>30</td>
+          </tr>
+          </table>
+        </div>
+      </div>
+      <table border="0">
+      <tr>
+        <td>Position:</td>
+        <td>
+          <input id="pos-x" type="number" style="width:50px" value="0" step="0.1">
+          <input id="pos-y" type="number" style="width:50px" value="0" step="0.1">
+          <input id="pos-z" type="number" style="width:50px" value="0" step="0.1">
+        </td>
+      </tr>
+      <tr>
+        <td>Orientation:</td>
+        <td>
+          <input id="rot-x" type="number" style="width:50px" value="0" step="1">
+          <input id="rot-y" type="number" style="width:50px" value="0" step="1">
+          <input id="rot-z" type="number" style="width:50px" value="0" step="1">
+        </td>
+      </tr>
+      <tr>
+        <td>Color:</td>
+        <td><input id="color" type="color" value="#0000ff"></td>
+      </tr>
+      </table>
+      <input id="create-btn" type="button" value="Create" style="float:right;">
+    </div>
+    <h3>Camera settings</h3>
+    <div style="padding: 5px">
+      <table border="0">
+      <tr>
+        <td>Distance:</td>
+        <td align='right'>1</td>
+        <td><input id="distance" type="range" min="1" max="10" step="0.2" value="5"/></td>
+        <td>10</td>
+      </tr>
+      <tr>
+        <td>Course:</td>
+        <td align='right'>-180</td>
+        <td><input id="course" type="range" min="-180" max="180" step="5" value="0"/></td>
+        <td>180</td>
+      </tr>
+      <tr>
+        <td>Pitch:</td>
+        <td align='right'>-90</td>
+        <td><input id="pitch" type="range" min="-90" max="90" step="5" value="30"/></td>
+        <td>90</td>
+      </tr>
+      <tr><td colspan=4><hr></td></tr>
+      <tr>
+        <td>FOV:</td>
+        <td align='right'>30</td>
+        <td><input id="fov" type="range" min="30" max="120" step="5" value="90"/></td>
+        <td>120</td>
+      </tr>
+      <tr>
+        <td>Near clip:</td>
+        <td align='right'>0.01</td>
+        <td><input id="near-clip" type="range" min="0.01" max="1" step="0.01" value="0.1"/></td>
+        <td>1</td>
+      </tr>
+      <tr>
+        <td>Far clip:</td>
+        <td align='right'>10</td>
+        <td><input id="far-clip" type="range" min="10" max="100" step="1" value="20"/></td>
+        <td>100</td>
+      </tr>
+      </table>
+    </div>
+    <h3>Scene objects</h3>
+    <div style="padding: 5px">
+      <table border="0">
+      <tr>
+        <td><select size="20" id="obj-list" style="width:100px"></select></td>
+        <td valign="top">
+          <table border="0" id="obj-list-prop" hidden="hidden">
+          <tr>
+            <td>Position:</td>
+            <td>
+              <input id="sel-pos-x" type="number" style="width:50px" value="0" step="0.1">
+              <input id="sel-pos-y" type="number" style="width:50px" value="0" step="0.1">
+              <input id="sel-pos-z" type="number" style="width:50px" value="0" step="0.1">
+            </td>
+          </tr>
+          <tr>
+            <td>Orientation:</td>
+            <td>
+              <input id="sel-rot-x" type="number" style="width:50px" value="0" step="1">
+              <input id="sel-rot-y" type="number" style="width:50px" value="0" step="1">
+              <input id="sel-rot-z" type="number" style="width:50px" value="0" step="1">
+            </td>
+          </tr>
+          <tr>
+            <td>Color:</td>
+            <td><input id="sel-color" type="color" value="#0000ff"></td>
+          </tr>
+          </table>
+        </td>
+      </tr>
+      </table>
+    </div>
+  </div>
+  <div style="background-color:#373833;color:white;clear:both">
+    <center>
+      Copyright © 2015 Roman Kulagin (Qlogin)
+    </center>
+  </div>
+</div>
+</body>
+</html>

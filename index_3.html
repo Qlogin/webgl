@@ -7,7 +7,7 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="WebGL">
     <meta name="author" content="Qlogin">
-    <title>Qlogin WebGL Examples</title>
+    <title>Qlogin WebGL Assignment 4</title>
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
   </head>
@@ -26,16 +26,17 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li class="dropdown">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#about">About</a></li>
+            <li class="active dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Examples <span class="caret"></span></a>
               <ul class="dropdown-menu">
                 <li class="dropdown-header">Coursera assignments</li>
                 <li><a href="index_1.html">#1 Tessellation and Twist</a></li>
                 <li><a href="index_2.html">#2 Mouse painting</a></li>
-                <li><a href="#">#3 Geometric CAD</a></li>
+                <li class="active"><a href="#">#3 Geometric CAD</a></li>
                 <li><a href="index_4.html">#4 CAD with Lighting</a></li>
+                <li><a href="#">#5 Texturing</a></li>
                 <li role="separator" class="divider"></li>
                 <li class="dropdown-header">Complex Demos</li>
                 <li><a href="#">Demo 1</a></li>
@@ -49,56 +50,15 @@
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-xs-12 col-md-offset-1 col-md-7">
-          <!-- Main jumbotron for a primary marketing message or call to action -->
-          <h1>WebGL Examples and Demos!</h1>
-          <p>Here you can find example and demos of three-dimensional interactive applications that used WebGL.
-             These applications are independent of the particular platform and can be run like any other Web application
-             within the latest web browsers.
-             Enjoy 3D Computer Graphics developed in JavaScript!
-          </p>
-          <div class="row">
-            <div class="col-sm-12 col-md-6 col-lg-4">
-              <h2>1. Tessellation and Twist</h2>
-              <p>First program allow you to demonstrate twist and tessellation. User can enter both the number of subdivisions and the angle.
-                 Rotation is implemented in the vertex shader despite of doing the same operation in JavaScript code.
-                 Simple shading based on distance from center attenuation.</p>
-              <p><a class="btn btn-default" href="index_1.html" role="button">View details &raquo;</a></p>
-            </div>
-            <div class="col-sm-12 col-md-6 col-lg-4">
-              <h2>2. Painting with the mouse</h2>
-              <p>This application will let you created what look like curves by connecting a series of vertices with line segments.
-                 The vertices are generating through the mouse move event while a mouse button is depressed.
-                 A new curve is started each time the mouse button is depressed. User can change the drawing color and line width.</p>
-              <p><a class="btn btn-default" href="index_2.html" role="button">View details &raquo;</a></p>
-            </div>
-            <div class="col-sm-12 col-md-6 col-lg-4">
-              <h2>3. Geometric CAD</h2>
-              <p>CAD-like application that gives you some experience with transformations, 3D-objects and interaction.
-                 A simple modeling program that lets the user populate the canvas with spheres, cones, and cylinders.
-                 All the information - choice of an object, its size, its location and its orientation - is entered interactively.
-                 But this is only the sketch of usefull graphic interface (that implemented in next example).</p>
-              <p><a class="btn btn-default" href="index_3.html" role="button">View details &raquo;</a></p>
-            </div>
-            <div class="col-sm-12 col-md-6 col-lg-4">
-              <h2>4. CAD with Lighting</h2>
-              <p>This is an extension of the previous example. Here we get a more realistic image by using lighting.
-                 User can assign material properties to objects and can control light sources. Also user interface has been improved:
-                 camera movement using mouse, interactive object placement, immediate reaction on parameters changing</p>
-              <p><a class="btn btn-default" href="index_4.html" role="button">View details &raquo;</a></p>
-            </div>
-            <div class="col-sm-12 col-md-6 col-lg-4">
-              <h2>5. Texturing</h2>
-              <p></p>
-              <p><button class="btn btn-default" disabled="disabled">View details &raquo;</button></p>
+        <div class="col-xs-12 col-md-10 col-lg-9">
+          <div class="demo-frame-4">
+            <iframe src="geometricCAD_3.html" width="100%" height="100%"></iframe>
+            <div class="top-right">
+              <a href="geometricCAD_3.html"><img src="images/fullscreen-black.png"></a>
             </div>
           </div>
-          <hr>
-              <footer>
-                <p>Copyright &copy; 2015 Roman Qlogin</p>
-              </footer>
         </div>
-        <div class="col-xs-4 col-md-2 col-md-offset-1">
+        <div class="col-xs-4 col-md-2">
           <div class="panel panel-default">
             <div class="panel-heading">
               <h6 class="panel-title">Demos Source Code</h6>
