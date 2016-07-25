@@ -9,6 +9,8 @@ var numTimesToSubdivide = 0;
 var mode = 1;
 var phi = 0;
 var phiLoc;
+var theta = 0;
+var thetaLoc;
 
 var color = [1.0, 1.0, 1.0];
 var colorLoc;
@@ -66,6 +68,7 @@ window.onload = function init()
     gl.enableVertexAttribArray( vPos );
 
     phiLoc = gl.getUniformLocation(program, "phi");
+    thetaLoc = gl.getUniformLocation(program, "theta");
     colorLoc = gl.getUniformLocation(program, "color");
 
     // Controls
@@ -87,6 +90,12 @@ window.onload = function init()
         render();
     };
 
+    var thetaEl = document.getElementById("theta");
+    thetaEl.oninput = function(event) {
+        theta = event.target.value;
+        render();
+    }
+
     var modeEl = document.getElementById("mode");
     modeEl.onchange = function(event) {
         mode = event.target.value;
@@ -96,6 +105,7 @@ window.onload = function init()
     storeColorValue(colEl);
     numTimesToSubdivide = levelEl.value;
     phi = phiEl.value;
+    theta = thetaEl.value;
     mode = modeEl.mode.value;
 
     update();
@@ -161,6 +171,7 @@ function render()
     gl.clear( gl.COLOR_BUFFER_BIT );
 
     gl.uniform1f( phiLoc, phi );
+    gl.uniform1f( thetaLoc, theta );
     gl.uniform3fv( colorLoc, color );
     gl.drawArrays( mode == 0 ? gl.LINES : gl.TRIANGLES, 0, points.length );
 }

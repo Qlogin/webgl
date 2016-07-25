@@ -8,11 +8,12 @@
 attribute vec4 vPos;
 varying float dist;
 uniform float phi;
+uniform float theta;
 
 void main()
 {
     float d = length(vPos.xy);
-    float angle = radians(phi) * d;
+    float angle = radians(phi) * d + radians(theta);
     vec2  cosi = vec2(cos(angle), -sin(angle));
 
     float x = dot(vPos.xy, cosi);
@@ -76,7 +77,11 @@ void main()
       </tr>
       <tr>
         <td>phi:</td>
-        <td>0<input id="phi" type="range" min="0" max="360" step="5" value="0"/>360&deg;</td>
+        <td><input id="phi" type="range" min="-360" max="360" step="5" value="0"/></td>
+      </tr>
+      <tr>
+        <td>theta:</td>
+        <td><input id="theta" type="range" min="0" max="360" step="5" value="0"/></td>
       </tr>
       </table>
     </div>
