@@ -250,6 +250,7 @@ window.onload = function init()
         $('#obj-list-prop').attr('hidden', 'hidden');
         $('.prim-prop').attr('hidden', 'hidden');
         $("#obj-list option:selected").remove();
+        sel_id = -1;
         //render();
     });
 
