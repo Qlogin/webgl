@@ -39,7 +39,7 @@ void main()
 <script type="text/javascript" src="common/initShaders.js"></script>
 <script type="text/javascript" src="common/MV.js"></script>
 <script type="text/javascript" src="tesselationTwist.js"></script>
-</head>   
+</head>
 
 <body>
 <div style="width:800px">
@@ -57,16 +57,26 @@ void main()
     <div style="padding: 5px;color:#ddd">
       <table border="0">
       <tr>
-      <td>color:</td>
-      <td>&nbsp;<input id="color" type="color" value="#ff0000"/></td>
+        <td>color:</td>
+        <td>&nbsp;<input id="color" type="color" value="#ff0000"/></td>
       </tr>
       <tr>
-      <td>level:</td>
-      <td>0<input id="level" type="range" min="0" max="5" step="1" value="0"/>5</td>
+        <td>mode:</td>
+        <td>
+          <form id="mode">
+            <input name="mode" type="radio" value="0">wire<br>
+            <input name="mode" type="radio" value="1" checked="checked">pattern<br>
+            <input name="mode" type="radio" value="2">solid
+          </form>
+        </td>
       </tr>
       <tr>
-      <td>phi:</td>
-      <td>0<input id="phi" type="range" min="0" max="360" step="5" value="0"/>360&deg;</td>
+        <td>level:</td>
+        <td>0<input id="level" type="range" min="0" max="6" step="1" value="0"/>6</td>
+      </tr>
+      <tr>
+        <td>phi:</td>
+        <td>0<input id="phi" type="range" min="0" max="360" step="5" value="0"/>360&deg;</td>
       </tr>
       </table>
     </div>

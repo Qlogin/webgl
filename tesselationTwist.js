@@ -6,6 +6,7 @@ var gl;
 var points = [];
 
 var numTimesToSubdivide = 0;
+var mode = 1;
 var phi = 0;
 var phiLoc;
 
@@ -75,27 +76,40 @@ window.onload = function init()
     };
 
     var levelEl = document.getElementById("level");
-    levelEl.onchange = function(event) {
+    levelEl.oninput = function(event) {
         numTimesToSubdivide = event.target.value;
-        render();
+        update();
     };
 
     var phiEl = document.getElementById("phi");
-    phiEl.onchange = function(event) {
+    phiEl.oninput = function(event) {
         phi = event.target.value;
         render();
     };
 
+    var modeEl = document.getElementById("mode");
+    modeEl.onchange = function(event) {
+        mode = event.target.value;
+        update();
+    }
+
     storeColorValue(colEl);
     numTimesToSubdivide = levelEl.value;
     phi = phiEl.value;
+    mode = modeEl.mode.value;
 
-    render();
+    update();
 };
 
 function triangle( a, b, c )
 {
-    points.push( a, b, c );
+    if (mode == 0) {
+        points.push( a, b );
+        points.push( b, c );
+        points.push( c, a );
+    } else {
+        points.push( a, b, c );
+    }
 }
 
 function divideTriangle( a, b, c, count, flag )
@@ -121,11 +135,11 @@ function divideTriangle( a, b, c, count, flag )
         divideTriangle( a , ab, ac, count, flag );
         divideTriangle( c , ac, bc, count, flag );
         divideTriangle( b , bc, ab, count, flag );
-        divideTriangle( ab, bc, ac, count, 1 - flag );
+        divideTriangle( ab, bc, ac, count, mode == 2 ? flag : 1 - flag );
     }
 }
 
-function render()
+function update()
 {
     var R = 0.8;
     var delta = 2.0 * Math.PI / 3.0;
@@ -137,12 +151,16 @@ function render()
     ];
     points = [];
     divideTriangle( vertices[0], vertices[1], vertices[2],
-                    numTimesToSubdivide, 1);
+                    numTimesToSubdivide, 1 );
+    render();
+}
 
+function render()
+{
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(points));
     gl.clear( gl.COLOR_BUFFER_BIT );
 
     gl.uniform1f( phiLoc, phi );
     gl.uniform3fv( colorLoc, color );
-    gl.drawArrays( gl.TRIANGLES, 0, points.length );
+    gl.drawArrays( mode == 0 ? gl.LINES : gl.TRIANGLES, 0, points.length );
 }
