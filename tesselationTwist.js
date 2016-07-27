@@ -5,6 +5,7 @@ var gl;
 
 var points = [];
 
+var sierpinski = false;
 var numTimesToSubdivide = 0;
 var mode = 1;
 var phi = 0;
@@ -96,9 +97,17 @@ window.onload = function init()
         render();
     }
 
+    var sierEl = document.getElementById("sierpinski");
+    sierEl.onchange = function(event) {
+        sierpinski = event.target.checked;
+        update();
+    }
+
     var modeEl = document.getElementById("mode");
     modeEl.onchange = function(event) {
         mode = event.target.value;
+        sierEl.checked = sierpinski = (sierpinski && mode != 2);
+        sierEl.disabled = (mode == 2);
         update();
     }
 
@@ -107,6 +116,7 @@ window.onload = function init()
     phi = phiEl.value;
     theta = thetaEl.value;
     mode = modeEl.mode.value;
+    sierpinski = sierEl.checked;
 
     update();
 };
@@ -141,11 +151,11 @@ function divideTriangle( a, b, c, count, flag )
         --count;
 
         // four new triangles
-
         divideTriangle( a , ab, ac, count, flag );
         divideTriangle( c , ac, bc, count, flag );
         divideTriangle( b , bc, ab, count, flag );
-        divideTriangle( ab, bc, ac, count, mode == 2 ? flag : 1 - flag );
+        if (!sierpinski)
+            divideTriangle( ab, bc, ac, count, mode == 2 ? flag : 1 - flag );
     }
 }
 

@@ -70,18 +70,19 @@ void main()
             <input name="mode" type="radio" value="2">solid
           </form>
         </td>
+        <td><input id="sierpinski" type="checkbox">Sierpinski</td>
       </tr>
       <tr>
         <td>level:</td>
-        <td>0<input id="level" type="range" min="0" max="6" step="1" value="0"/>6</td>
+        <td colspan="2"><input id="level" type="range" min="0" max="6" step="1" value="0"/>6</td>
       </tr>
       <tr>
         <td>phi:</td>
-        <td><input id="phi" type="range" min="-360" max="360" step="5" value="0"/></td>
+        <td colspan="2"><input id="phi" type="range" min="-360" max="360" step="5" value="0"/>-360&deg;</td>
       </tr>
       <tr>
         <td>theta:</td>
-        <td><input id="theta" type="range" min="0" max="360" step="5" value="0"/></td>
+        <td colspan="2"><input id="theta" type="range" min="0" max="360" step="5" value="0"/>360&deg;</td>
       </tr>
       </table>
     </div>
