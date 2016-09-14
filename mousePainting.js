@@ -20,19 +20,6 @@ var lines = [];
 var lastPosX = 0;
 var lastPosY = 0;
 
-function hexToR(h) {return parseInt((cutHex(h)).substring(0,2),16)}
-function hexToG(h) {return parseInt((cutHex(h)).substring(2,4),16)}
-function hexToB(h) {return parseInt((cutHex(h)).substring(4,6),16)}
-function cutHex(h) {return (h.charAt(0)=="#") ? h.substring(1,7):h}
-
-function getColorValue(strcol)
-{
-    var color = [1.0, 1.0, 1.0];
-    color[0] = hexToR(strcol) / 255;
-    color[1] = hexToG(strcol) / 255;
-    color[2] = hexToB(strcol) / 255;
-    return color;
-}
 
 function getCoord(x, y)
 {
@@ -96,8 +83,8 @@ function mouseDown(event)
    lastPosY = event.offsetY;
 
    var new_line = new Object();
-   new_line.color1 = getColorValue(color1Ctrl.value);
-   new_line.color2 = getColorValue(color2Ctrl.value);
+   new_line.color1 = hexToRGB(color1Ctrl.value);
+   new_line.color2 = hexToRGB(color2Ctrl.value);
    new_line.repeat = parseInt(repeatCtrl.value, 10);
    new_line.total = 0;
 

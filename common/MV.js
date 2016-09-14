@@ -1,38 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-//  Angel.js
+//  MV.js
+//  Matrix and Vectors
 //
 //////////////////////////////////////////////////////////////////////////////
-
-//----------------------------------------------------------------------------
-//
-//  Helper functions
-//
-
-function hexToR(h) {return parseInt((cutHex(h)).substring(0,2),16)}
-function hexToG(h) {return parseInt((cutHex(h)).substring(2,4),16)}
-function hexToB(h) {return parseInt((cutHex(h)).substring(4,6),16)}
-function cutHex(h) {return (h.charAt(0)=="#") ? h.substring(1,7):h}
-
-function hexToRGB(strcol)
-{
-    var color = vec3(1.0, 1.0, 1.0);
-    color[0] = hexToR(strcol) / 255;
-    color[1] = hexToG(strcol) / 255;
-    color[2] = hexToB(strcol) / 255;
-    return color;
-}
-
-//----------------------------------------------------------------------------
-
-function rgbToHex(R,G,B) { return '#'+toHex(R)+toHex(G)+toHex(B)}
-function toHex(n)
-{
-   n = (255 * n).toFixed();
-   n = Math.max(0,Math.min(n,255));
-   return "0123456789ABCDEF".charAt((n-n%16)/16)
-        + "0123456789ABCDEF".charAt(n%16);
-}
 
 //----------------------------------------------------------------------------
 

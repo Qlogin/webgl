@@ -5,31 +5,30 @@ var gl;
 
 var points = [];
 
-var sierpinski = false;
-var numTimesToSubdivide = 0;
-var mode = 1;
-var phi = 0;
-var phiLoc;
-var theta = 0;
-var thetaLoc;
+var params = {
+  sierpinski : false,
+  level      : 0,
+  mode       : 1,
+  phi        : 0,
+  theta      : 0,
+  color      : vec3(1.0, 1.0, 1.0),
 
-var color = [1.0, 1.0, 1.0];
+  toString : function() {
+    return 'level='  + this.level
+         + '&mode='  + this.mode
+         + '&phi='   + this.phi
+         + '&theta=' + this.theta
+         + '&color=' + rgbToQuery(this.color)
+         + '&sierpinski=' + this.sierpinski;
+  }
+};
+
+// Shader uniform locations
+var phiLoc;
+var thetaLoc;
 var colorLoc;
 
 var bufferId;
-
-function hexToR(h) {return parseInt((cutHex(h)).substring(0,2),16)}
-function hexToG(h) {return parseInt((cutHex(h)).substring(2,4),16)}
-function hexToB(h) {return parseInt((cutHex(h)).substring(4,6),16)}
-function cutHex(h) {return (h.charAt(0)=="#") ? h.substring(1,7):h}
-
-function storeColorValue(target)
-{
-    var strcol = target.value;
-    color[0] = hexToR(strcol) / 255;
-    color[1] = hexToG(strcol) / 255;
-    color[2] = hexToB(strcol) / 255;
-}
 
 window.onload = function init()
 {
@@ -75,55 +74,60 @@ window.onload = function init()
     // Controls
     var colEl = document.getElementById("color");
     colEl.onchange = function(event) {
-        storeColorValue(event.target);
+        params.color = hexToRGB(event.target.value);
         render();
     };
 
     var levelEl = document.getElementById("level");
     levelEl.oninput = function(event) {
-        numTimesToSubdivide = event.target.value;
+        params.level = event.target.value;
         update();
     };
 
     var phiEl = document.getElementById("phi");
     phiEl.oninput = function(event) {
-        phi = event.target.value;
+        params.phi = event.target.value;
         render();
     };
 
     var thetaEl = document.getElementById("theta");
     thetaEl.oninput = function(event) {
-        theta = event.target.value;
+        params.theta = event.target.value;
         render();
     }
 
     var sierEl = document.getElementById("sierpinski");
     sierEl.onchange = function(event) {
-        sierpinski = event.target.checked;
+        params.sierpinski = event.target.checked;
         update();
     }
 
     var modeEl = document.getElementById("mode");
     modeEl.onchange = function(event) {
-        mode = event.target.value;
-        sierEl.checked = sierpinski = (sierpinski && mode != 2);
-        sierEl.disabled = (mode == 2);
+        params.mode = event.target.value;
+        sierEl.checked = params.sierpinski = (params.sierpinski && params.mode != 2);
+        sierEl.disabled = (params.mode == 2);
         update();
     }
 
-    storeColorValue(colEl);
-    numTimesToSubdivide = levelEl.value;
-    phi = phiEl.value;
-    theta = thetaEl.value;
-    mode = modeEl.mode.value;
-    sierpinski = sierEl.checked;
+    setParamFromQuery(colEl  , "color", function(x) { return rgbToHex.apply([], queryToRGB(x)); });
+    setParamFromQuery(levelEl, "level");
+    setParamFromQuery(phiEl  , "phi");
+    setParamFromQuery(thetaEl, "theta");
+
+    params.color = hexToRGB(colEl.value);
+    params.level = levelEl.value;
+    params.phi = phiEl.value;
+    params.theta = thetaEl.value;
+    params.mode = modeEl.mode.value;
+    params.sierpinski = sierEl.checked;
 
     update();
 };
 
 function triangle( a, b, c )
 {
-    if (mode == 0) {
+    if (params.mode == 0) {
         points.push( a, b );
         points.push( b, c );
         points.push( c, a );
@@ -154,8 +158,8 @@ function divideTriangle( a, b, c, count, flag )
         divideTriangle( a , ab, ac, count, flag );
         divideTriangle( c , ac, bc, count, flag );
         divideTriangle( b , bc, ab, count, flag );
-        if (!sierpinski)
-            divideTriangle( ab, bc, ac, count, mode == 2 ? flag : 1 - flag );
+        if (!params.sierpinski)
+            divideTriangle( ab, bc, ac, count, params.mode == 2 ? flag : 1 - flag );
     }
 }
 
@@ -171,17 +175,26 @@ function update()
     ];
     points = [];
     divideTriangle( vertices[0], vertices[1], vertices[2],
-                    numTimesToSubdivide, 1 );
+                    params.level, 1 );
     render();
 }
 
 function render()
 {
+    document.location.hash = params.toString();
+
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(points));
     gl.clear( gl.COLOR_BUFFER_BIT );
 
-    gl.uniform1f( phiLoc, phi );
-    gl.uniform1f( thetaLoc, theta );
-    gl.uniform3fv( colorLoc, color );
-    gl.drawArrays( mode == 0 ? gl.LINES : gl.TRIANGLES, 0, points.length );
+    gl.uniform1f( phiLoc, params.phi );
+    gl.uniform1f( thetaLoc, params.theta );
+    gl.uniform3fv( colorLoc, params.color );
+    gl.drawArrays( params.mode == 0 ? gl.LINES : gl.TRIANGLES, 0, points.length );
+}
+
+function setParamFromQuery(element, name, lambda)
+{
+    var val = getQueryString(name);
+    if (val)
+        element.value = lambda ? lambda(val) : val;
 }
