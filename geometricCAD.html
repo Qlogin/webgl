@@ -122,14 +122,15 @@ void main()
   .create-btn  { font-size: 12px }
   .spinner     { width: 30px }
   .range-value { border: 1px ridge grey; width: 30px; padding: 5px }
+  .save-load   { font-size: 10px; padding: 5px; position: absolute; top: 610px; left: 715px; width: 80px }
 </style>
 
 <script>
     $(function() {
-        $( "#accordion" ).accordion({heightStyle: "content"});
-        $( "#primitive-tabs" ).tabs();
-        $( ".create-btn" ).button();
-        $( ".spinner").spinner();
+        $("#accordion").accordion({heightStyle: "content"});
+        $("#primitive-tabs").tabs();
+        $("input[type=button]").button();
+        $(".spinner" ).spinner();
 
         $("output").each(function(index, el) {
             var for_el = $("#" + $(el).attr("for"));
@@ -567,18 +568,25 @@ void main()
             </div>
         </div>
     </div>
-        <div id="create-btns" style="color:white;position:absolute">
-            <form>
-                <fieldset>
-                    <legend>Create</legend>
-                    <input type="button" class="create-btn" id="sphere-btn" value="Sphere">
-                    <input type="button" class="create-btn" id="cylinder-btn" value="Cylinder">
-                    <input type="button" class="create-btn" id="cone-btn" value="Cone">
-                    <input type="button" class="create-btn" id="cube-btn" value="Cube">
-                </fieldset>
-            </form>
-        </div>
-
+    <div class="save-load">
+        <form>
+            <fieldset>
+                <input type="button" id="save-btn" value="Save">
+                <input type="button" id="load-btn" value="Load">
+            </fieldset>
+        </form>
+    </div>
+    <div id="create-btns" style="color:white;position:absolute">
+        <form>
+            <fieldset>
+                <legend>Create</legend>
+                <input type="button" class="create-btn" id="sphere-btn" value="Sphere">
+                <input type="button" class="create-btn" id="cylinder-btn" value="Cylinder">
+                <input type="button" class="create-btn" id="cone-btn" value="Cone">
+                <input type="button" class="create-btn" id="cube-btn" value="Cube">
+            </fieldset>
+        </form>
+    </div>
     <div style="background-color:#272823;color:white;clear:both">
         <center>
             Copyright © 2015 Roman Kulagin (Qlogin)

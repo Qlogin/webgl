@@ -51,6 +51,19 @@ var camera = {
         this.projMatrix = perspective(this.fov, canvas.width/canvas.height,
                                       this.near, this.far);
         this.vpMatrix = mult(this.projMatrix, this.viewMatrix);
+    },
+
+    toJSON : function() {
+        return {
+            course     : this.course,
+            pitch      : this.pitch,
+            distance   : this.distance,
+            fov        : this.fov,
+            near       : this.near,
+            far        : this.far,
+            fog_color  : this.fog_color,
+            fog_density: this.fog_density,
+        };
     }
 };
 
@@ -254,6 +267,23 @@ window.onload = function init()
         //render();
     });
 
+    $('#save-btn').click(function(event) {
+        var scene = {
+            'objects' : objects,
+            'lights'  : lights,
+            'camera'  : camera
+        };
+
+        var json = JSON.stringify(scene);
+        var blob = new Blob([json], {type: "application/json"});
+        var url  = URL.createObjectURL(blob);
+
+        var a = document.createElement('a');
+        a.download = "scene.json";
+        a.href     = url;
+        a.click();
+    });
+
     $('#obj-list').bind('change', function(event) {
         sel_id = $("#obj-list option:selected").index();
         on_select();
@@ -261,73 +291,73 @@ window.onload = function init()
     });
 
     $('#sel-ambient').bind('change', function(event){
-        objects[sel_id].ambient = hexToRGB(event.target.value);
+        objects[sel_id].params.ambient = hexToRGB(event.target.value);
         //render();
     });
 
     $('#sel-diffuse').bind('change', function(event){
-        objects[sel_id].diffuse = hexToRGB(event.target.value);
+        objects[sel_id].params.diffuse = hexToRGB(event.target.value);
         //render();
     });
 
     $('#sel-specular').bind('change', function(event) {
-        objects[sel_id].specular = hexToRGB(event.target.value);
+        objects[sel_id].params.specular = hexToRGB(event.target.value);
         //render();
     });
 
     $('#sel-shininess').bind('input', function(event) {
-        objects[sel_id].shininess = event.target.valueAsNumber;
+        objects[sel_id].params.shininess = event.target.valueAsNumber;
         //render();
     });
 
     $('#sel-sphere-radius, #sel-sphere-hor-subdiv, #sel-sphere-vert-subdiv')
         .bind('input', function() {
-            objects[sel_id].r    = $('#sel-sphere-radius')[0].valueAsNumber;
-            objects[sel_id].hnum = $('#sel-sphere-hor-subdiv')[0].valueAsNumber;
-            objects[sel_id].vnum = $('#sel-sphere-vert-subdiv')[0].valueAsNumber;
+            objects[sel_id].params.r    = $('#sel-sphere-radius')[0].valueAsNumber;
+            objects[sel_id].params.hnum = $('#sel-sphere-hor-subdiv')[0].valueAsNumber;
+            objects[sel_id].params.vnum = $('#sel-sphere-vert-subdiv')[0].valueAsNumber;
             objects[sel_id].update_buffers();
             //render();
         });
 
     $('#sel-cylinder-radius, #sel-cylinder-height, #sel-cylinder-subdiv')
         .bind('input', function() {
-            objects[sel_id].r    = $('#sel-cylinder-radius')[0].valueAsNumber;
-            objects[sel_id].h    = $('#sel-cylinder-height')[0].valueAsNumber;
-            objects[sel_id].hnum = $('#sel-cylinder-subdiv')[0].valueAsNumber;
+            objects[sel_id].params.r    = $('#sel-cylinder-radius')[0].valueAsNumber;
+            objects[sel_id].params.h    = $('#sel-cylinder-height')[0].valueAsNumber;
+            objects[sel_id].params.hnum = $('#sel-cylinder-subdiv')[0].valueAsNumber;
             objects[sel_id].update_buffers();
             //render();
         });
 
     $('#sel-cone-radius, #sel-cone-height, #sel-cone-subdiv')
         .bind('input', function() {
-            objects[sel_id].r    = $('#sel-cone-radius')[0].valueAsNumber;
-            objects[sel_id].h    = $('#sel-cone-height')[0].valueAsNumber;
-            objects[sel_id].hnum = $('#sel-cone-subdiv')[0].valueAsNumber;
+            objects[sel_id].params.r    = $('#sel-cone-radius')[0].valueAsNumber;
+            objects[sel_id].params.h    = $('#sel-cone-height')[0].valueAsNumber;
+            objects[sel_id].params.hnum = $('#sel-cone-subdiv')[0].valueAsNumber;
             objects[sel_id].update_buffers();
             //render();
         });
 
     $('#sel-cube-sizex, #sel-cube-sizey, #sel-cube-sizez')
         .bind('input', function() {
-            objects[sel_id].sx    = $('#sel-cube-sizex')[0].valueAsNumber;
-            objects[sel_id].sy    = $('#sel-cube-sizey')[0].valueAsNumber;
-            objects[sel_id].sz    = $('#sel-cube-sizez')[0].valueAsNumber;
+            objects[sel_id].params.sx    = $('#sel-cube-sizex')[0].valueAsNumber;
+            objects[sel_id].params.sy    = $('#sel-cube-sizey')[0].valueAsNumber;
+            objects[sel_id].params.sz    = $('#sel-cube-sizez')[0].valueAsNumber;
             objects[sel_id].update_buffers();
             //render();
         });
 
     $('#sel-pos-x, #sel-pos-y, #sel-pos-z').bind('spin spinchange', function() {
-        objects[sel_id].pos = vec3($('#sel-pos-x').spinner("value"),
-                                   $('#sel-pos-y').spinner("value"),
-                                   $('#sel-pos-z').spinner("value"));
+        objects[sel_id].params.pos = vec3($('#sel-pos-x').spinner("value"),
+                                          $('#sel-pos-y').spinner("value"),
+                                          $('#sel-pos-z').spinner("value"));
         objects[sel_id].update_transform();
         //render();
     });
 
     $('#sel-rot-x, #sel-rot-y, #sel-rot-z').bind('spin spinchange', function() {
-        objects[sel_id].rot = vec3($('#sel-rot-x').spinner("value"),
-                                   $('#sel-rot-y').spinner("value"),
-                                   $('#sel-rot-z').spinner("value"));
+        objects[sel_id].params.rot = vec3($('#sel-rot-x').spinner("value"),
+                                          $('#sel-rot-y').spinner("value"),
+                                          $('#sel-rot-z').spinner("value"));
         objects[sel_id].update_transform();
         //render();
     });
@@ -388,12 +418,10 @@ function createObject(type, position)
 
 function addObject(obj, position, orientation, color)
 {
-    obj.pos   = position;
-    obj.rot   = orientation;
-    obj.ambient  = color;
-    obj.diffuse  = color;
-    obj.specular = vec3(1, 1, 1);
-    obj.shininess = 64;
+    obj.params.pos   = position;
+    obj.params.rot   = orientation;
+    obj.params.ambient  = color;
+    obj.params.diffuse  = color;
     obj.update_transform();
 
     objects.push(obj);
@@ -410,37 +438,37 @@ function on_select()
     $('.prim-prop#' + obj.type).removeAttr('hidden');
 
     if (obj.type == "Sphere") {
-        $('#sel-sphere-radius').val(obj.r);
-        $('#sel-sphere-hor-subdiv').val(obj.hnum);
-        $('#sel-sphere-vert-subdiv').val(obj.vnum);
+        $('#sel-sphere-radius').val(obj.params.r);
+        $('#sel-sphere-hor-subdiv').val(obj.params.hnum);
+        $('#sel-sphere-vert-subdiv').val(obj.params.vnum);
     }
     else if (obj.type == "Cylinder") {
-        $('#sel-cylinder-radius').val(obj.r);
-        $('#sel-cylinder-height').val(obj.h);
-        $('#sel-cylinder-subdiv').val(obj.hnum);
+        $('#sel-cylinder-radius').val(obj.params.r);
+        $('#sel-cylinder-height').val(obj.params.h);
+        $('#sel-cylinder-subdiv').val(obj.params.hnum);
     }
     else if (obj.type == "Cone") {
-        $('#sel-cone-radius').val(obj.r);
-        $('#sel-cone-height').val(obj.h);
-        $('#sel-cone-subdiv').val(obj.hnum);
+        $('#sel-cone-radius').val(obj.params.r);
+        $('#sel-cone-height').val(obj.params.h);
+        $('#sel-cone-subdiv').val(obj.params.hnum);
     }
     else if (obj.type == "Cube") {
-        $('#sel-cube-sizex').val(obj.sx);
-        $('#sel-cube-sizey').val(obj.sy);
-        $('#sel-cube-sizez').val(obj.sz);
+        $('#sel-cube-sizex').val(obj.params.sx);
+        $('#sel-cube-sizey').val(obj.params.sy);
+        $('#sel-cube-sizez').val(obj.params.sz);
     }
 
-    $('#sel-ambient').val(rgbToHex(obj.ambient[0]  , obj.ambient[1] , obj.ambient[2]));
-    $('#sel-diffuse').val(rgbToHex(obj.diffuse[0]  , obj.diffuse[1] , obj.diffuse[2]));
-    $('#sel-specular').val(rgbToHex(obj.specular[0], obj.specular[1], obj.specular[2]));
-    $('#sel-shininess').val(obj.shininess);
+    $('#sel-ambient').val(rgbToHex(obj.params.ambient[0]  , obj.params.ambient[1] , obj.params.ambient[2]));
+    $('#sel-diffuse').val(rgbToHex(obj.params.diffuse[0]  , obj.params.diffuse[1] , obj.params.diffuse[2]));
+    $('#sel-specular').val(rgbToHex(obj.params.specular[0], obj.params.specular[1], obj.params.specular[2]));
+    $('#sel-shininess').val(obj.params.shininess);
 
-    $('#sel-pos-x').val(obj.pos[0]);
-    $('#sel-pos-y').val(obj.pos[1]);
-    $('#sel-pos-z').val(obj.pos[2]);
-    $('#sel-rot-x').val(obj.rot[0]);
-    $('#sel-rot-y').val(obj.rot[1]);
-    $('#sel-rot-z').val(obj.rot[2]);
+    $('#sel-pos-x').val(obj.params.pos[0]);
+    $('#sel-pos-y').val(obj.params.pos[1]);
+    $('#sel-pos-z').val(obj.params.pos[2]);
+    $('#sel-rot-x').val(obj.params.rot[0]);
+    $('#sel-rot-y').val(obj.params.rot[1]);
+    $('#sel-rot-z').val(obj.params.rot[2]);
 }
 
 function screen2global(x, y)
@@ -515,9 +543,9 @@ function render()
         {
             if (lights[j].enabled) {
                 pos = pos.concat(mult(camera.viewMatrix, lights[j].pos));
-                amb_prod = amb_prod.concat(mult(lights[j].ambient, objects[i].ambient));
-                diff_prod = diff_prod.concat(mult(lights[j].diffuse, objects[i].diffuse));
-                spec_prod = spec_prod.concat(mult(lights[j].specular, objects[i].specular));
+                amb_prod = amb_prod.concat(mult(lights[j].ambient, objects[i].params.ambient));
+                diff_prod = diff_prod.concat(mult(lights[j].diffuse, objects[i].params.diffuse));
+                spec_prod = spec_prod.concat(mult(lights[j].specular, objects[i].params.specular));
             }
             else {
                 pos = pos.concat(0, 0, 0, 0);
@@ -531,7 +559,7 @@ function render()
         gl.uniform3fv  ( uLight.ambient_prod , amb_prod );
         gl.uniform3fv  ( uLight.diffuse_prod , diff_prod );
         gl.uniform3fv  ( uLight.specular_prod, spec_prod );
-        gl.uniform1f   ( uLight.shininess, objects[i].shininess );
+        gl.uniform1f   ( uLight.shininess, objects[i].params.shininess );
         gl.bindBuffer  ( gl.ELEMENT_ARRAY_BUFFER, objects[i].triBuffer );
         gl.drawElements( gl.TRIANGLES, objects[i].triNum, gl.UNSIGNED_SHORT, 0);
     }
